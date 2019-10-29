@@ -52,16 +52,28 @@ When users zoom out,
 some land-cover parcels become too tiny to be seen, 
 which result in visual clutters. 
 To avoid this problem, we merge small parcels into their neighbors to form larger parcels. 
-We define that an event is merging some parcels into a larger parcel. 
-In our method, we require that each event involves exactly two parcels 
-which is completely processed before the next pair is merged (all sequential). 
-However, because of the given sequence in which the events are processed one by one, 
+We define an \emph{event} as merging a parcel into a larger parcel.
+However, because of the given sequence 
+in which the events are processed one by one, 
 the map users still experience shock changes 
-(because the merging transition time of their zooming out can be short). 
-We try to reduce the shock changes by parallel processing the events. 
+(because the merging transition time of their zooming out can be short).
+We try to reduce the shock changes by parallel processing the events.
+We define a \emph{step} as a set of merging events happening at the same time.
+In our method, a merging step is completely processed 
+before the next merging step takes place (all sequential). 
 In this way, each event has more time to take place, 
 resulting in more smooth zooming. 
-This presentation will show the details of finding and processing parallel events.
+Furthermore, we require that 
+all the pairs of parcels involved in the merging events of a step 
+do not have any common neighbors, 
+which makes the merging events independent from each other.
+There are two benefits of this requirement.
+First, it is easy for us to maintain the topology of the map.
+Second, users can more easily understand the events 
+than merging several parcels into a single one.
+This paper shows the details of finding and processing parallel events.
+Then, this paper compares between the scale transitions of maps generated
+based on single-event merging step and parallel-event merging step.
 }
 
 % Keywords
@@ -241,7 +253,6 @@ This situation happens $XXX$ times in our data.
 For the same reason, we cannot always use the most compatible adjacent polygon,
 which happens $XXX$ times.
 
-\section{Case Study}
 
 \subsection{Future Work}
 
@@ -252,6 +263,8 @@ For those given merging sequence,
 it is interesting to parallel some of the merging events.
 
 Integrate split operation into our method.
+
+evenly distribute the merging events for each step
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\section{Patents}
