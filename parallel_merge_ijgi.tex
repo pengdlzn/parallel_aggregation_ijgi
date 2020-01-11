@@ -47,33 +47,41 @@ if there are multiple corresponding authors, add author initials) +xx-xxxx-xxx-x
 
 % Abstract (Do not insert blank lines, i.e. \\) 
 \abstract{
+%meaning of time.
 Land-cover parcels are important features on maps.
-When users zoom out, 
+When users zoom out on digital maps, 
 some land-cover parcels become too tiny to be seen, 
 which result in visual clutters. 
-To avoid this problem, we merge small parcels into their neighbors to form larger parcels. 
-We define an \emph{event} as merging a parcel into a larger parcel.
+To avoid this problem, 
+we merge small parcels into their neighbors to form larger parcels. 
+We define an \emph{event} as merging a small parcel into a neighbor, 
+where the color of the small parcel gradually changes 
+to the color of the neighbor
+or the neighbor gradually expands over the small parcel.
 However, because of the given sequence 
 in which the events are processed one by one, 
 the map users still experience shock changes 
 (because the merging transition time of their zooming out can be short).
-We try to reduce the shock changes by parallel processing the events.
+We try to produce smooth changes by paralleling the events.
 We define a \emph{step} as a set of merging events happening at the same time.
 In our method, a merging step is completely processed 
 before the next merging step takes place (all sequential). 
-In this way, each event has more time to take place, 
+In this way, each event has more time to be observed by users,
 resulting in more smooth zooming. 
 Furthermore, we require that 
 all the pairs of parcels involved in the merging events of a step 
 do not have any common neighbors, 
 which makes the merging events independent from each other.
-There are two benefits of this requirement.
+There are two benefits of this independency.
 First, it is easy for us to maintain the topology of the map.
 Second, users can more easily understand the events 
 than merging several parcels into a single one.
 This paper shows the details of finding and processing parallel events.
 Then, this paper compares between the scale transitions of maps generated
 based on single-event merging step and parallel-event merging step.
+Our original contribution is the proposal of the parallel generalization
+maintaining map consistency over scale change. 
+%why? how? what? so what?
 }
 
 % Keywords
@@ -174,16 +182,98 @@ to merge land-cover parcels
 based on the \Astar algorithm or an integer linear program.
 A comparison to a greedy algorithm showed that 
 the \Astar algorithm improves the quality of the merging sequences.
+\citet{vanOosterom2014Support} pointed out that sequentially merging
+land-cover parcels may result in a suboptimal smooth-zoom effect.
+To provide better visualization, they suggested that
+the merging operations should be paralleled.
+Then, one question is how many operations 
+should be paralleled for a given scale.
 
-The parallel merging has been mentioned in the conclusion of
-\citet{Suba2014Merge}.
 
-\citet{Suba2016Road}
+
+\citet{Suba2014Merge} proposed three methods to merge two parcels, 
+which are the ``Single flat plane'', the ``Zipper'', and the ``Eater''.
+Basically, the \emph{winner} gradually expands over the \emph{loser}.
+We will use the ``Eater'' because it works for all kinds of polygons 
+while the other two methods have limitation in terms of the type of a polygon.
+For example, the two other methods do not work for some concave polygons.
+
+
+
+\citet{Suba2016Road} continuously generalized a planar map.
+At each step, they process the least-important face.
+Taking into account the condition of the face,
+they put it back with higher importance, collapse it, 
+or merge it into an adjacent face.
+In addition to the generalization, 
+they also observed the number of faces,
+the area of faces, the number of road faces, the number of road edges,
+and the number of operations (merge and split) 
+when the scale of the map is decreasing.
+These statistics can be good benchmarks for (continuous) map generalization.
+
+
+
+\citet{Huang2016Webmap} described their strategy of implementing online maps, 
+considering both the server side and the client side.
+
+\citet{Huang2017Matrix} used a matrix to guide 
+both pruning rivers and removing vertices for a river network, 
+where the rows and the columns respectively represent
+the rivers and the vertices.
+According to the matrix, 
+they were able to decide which rivers and vertices 
+should be remained for a given scale.
+To this purpose, they proposed a method 
+to compute how many rivers and vertices 
+should be kept according to that given scale.
 
 \citet{Thiemann2018LandCover}
 
 
+%\citet{Meijers2015Parallel}
+
+%
+
 \section{A Greedy Algorithm}
+
+%We define an \emph{event} as merging a small parcel into a neighbor, 
+%where the color of the small parcel gradually changes 
+%to the color of the neighbor
+%or the neighbor gradually expands over the small parcel.
+%However, because of the given sequence 
+%in which the events are processed one by one, 
+%the map users still experience shock changes 
+%(because the merging transition time of their zooming out can be short).
+%We try to produce smooth changes by paralleling the events.
+%We define a \emph{step} as a set of merging events happening at the same time.
+%In our method, a merging step is completely processed 
+%before the next merging step takes place (all sequential). 
+%In this way, each event has more time to be observed by users,
+%resulting in more smooth zooming. 
+%Furthermore, we require that 
+%all the pairs of parcels involved in the merging events of a step 
+%do not have any common neighbors, 
+%which makes the merging events independent from each other.
+%There are two benefits of this independency.
+%First, it is easy for us to maintain the topology of the map.
+%Second, users can more easily understand the events 
+%than merging several parcels into a single one.
+
+
+We define an \emph{event} as merging a small parcel into a neighbor.
+For example, 
+We define a \emph{step} as 
+a set of merging events happening at the same time.
+
+\begin{figure}[htb]
+\centering
+\includegraphics[page=1]{greedy_algorithm}
+\caption{Merging event and merging step. 
+Figure (b) is obtained }
+\label{fig:greedy_algorithm}
+\end{figure}
+
 We may have $400$ merging events.
 An merging step consists of one or many merging events.
 We would like the steps to be as few as possible.
@@ -218,10 +308,14 @@ Then the blocked polygons are released, and the finding for the next steps start
 
 \begin{figure}[htb]
 \centering
-\includegraphics[]{bloked_polygons}
-\caption{.}
+\includegraphics[]{blocked_polygons}
+\caption{At a step, once the dark parcels are selected for merging, 
+the neighbors are blocked for being involved for parallel events at the same step,
+which makes it easy for us to maintain the topology of a map.}
 \label{fig:bloked_polygons}
 \end{figure}
+
+
 
 
 %From the ordered sequence of the events, 
@@ -242,6 +336,26 @@ Then the blocked polygons are released, and the finding for the next steps start
 %
 %Two events conflict if they share a neighbor.
 
+
+
+\section{Smooth Merging}
+
+
+
+\begin{figure}[htb]
+\centering
+\includegraphics[page=1]{smooth_merging}
+\caption{At a step, once the dark parcels are selected for merging, 
+the neighbors are blocked for being involved for parallel events at the same step,
+which makes it easy for us to maintain the topology of a map.}
+\label{fig:smooth_merging}
+\end{figure}
+
+
+\section{Snapping to Certain Steps}
+We may have $400$ merging events.
+
+
 \section{Case Study}
 
 The number of times that we compromised.
@@ -253,6 +367,7 @@ This situation happens $XXX$ times in our data.
 For the same reason, we cannot always use the most compatible adjacent polygon,
 which happens $XXX$ times.
 
+\section{Concluding Remarks}
 
 \subsection{Future Work}
 
@@ -265,6 +380,23 @@ it is interesting to parallel some of the merging events.
 Integrate split operation into our method.
 
 evenly distribute the merging events for each step
+
+When we remove a triangle by slicing the SSC, 
+we may want to keep three vertices of the triangle instead of making four vertices.
+In this case, the polyhedron (with five faces) should have curly edges,
+which is also known as a \emph{curved polyhedron}.
+$\cos, \sin$.
+
+
+
+\begin{figure}[htb]
+\centering
+\includegraphics[page=2]{smooth_merging}
+\caption{At a step, once the dark parcels are selected for merging, 
+the neighbors are blocked for being involved for parallel events at the same step,
+which makes it easy for us to maintain the topology of a map.}
+\label{fig:smooth_merging_future}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\section{Patents}
