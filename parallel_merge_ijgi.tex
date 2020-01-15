@@ -189,8 +189,6 @@ the merging operations should be paralleled.
 Then, one question is how many operations 
 should be paralleled for a given scale.
 
-
-
 \citet{Suba2014Merge} proposed three methods to merge two parcels, 
 which are the ``Single flat plane'', the ``Zipper'', and the ``Eater''.
 Basically, the \emph{winner} gradually expands over the \emph{loser}.
@@ -229,6 +227,8 @@ to compute how many rivers and vertices
 should be kept according to that given scale.
 
 \citet{Thiemann2018LandCover}
+
+\citet{Meijers2020Web}
 
 
 %\citet{Meijers2015Parallel}
@@ -372,6 +372,12 @@ the common boundary exists only in \fig\ref{fig:smooth_merging}a but not in
 \fig\ref{fig:smooth_merging}c, or
 \fig\ref{fig:smooth_merging}d.
 
+\begin{figure}[tb]
+\centering
+\includegraphics[scale=0.2]{smooth_merging_two_rectangles}
+\caption{pass.}
+\label{fig:smooth_merging_two_rectangles}
+\end{figure}
 
 \begin{figure}[tb]
 \centering
@@ -444,6 +450,7 @@ and saved these elements in an OBJ file\footnote{%
 Wavefront .obj file:
 \url{https://en.wikipedia.org/wiki/Wavefront_.obj_file},
 accessed: Jan 14, 2020.}.
+%
 The OBJ file will be sent to the client 
 when a user visits our website to access the map.
 On the client side,
@@ -455,16 +462,23 @@ More information about TOP10NL can be found at
 \url{https://zakelijk.kadaster.nl/-/topnl},
 accessed: Jan 14, 2020.},
 produced by Kadaster.
-\figs\ref{fig:data}a and~\ref{fig:data}c show the map and the legend.
+%
+\figs\ref{fig:data}a and~\ref{fig:data}c show the map and the legend\footnote{%
+More details about the type code and the rendering formula can be found at
+\url{http://register.geostandaarden.nl/visualisatie/top10nl/1.2.0/BRT_TOP10NL_1.2_beschrijving_visualisatie.xlsx},
+accessed: Jan 15, 2020.}.
+%
 Because the base scale is $1:10{,}000$, 
 we have~$S_b = 10{,}000$ for \eq\ref{eq:S_t_snap}.
 The maximum value of event number~$E_{t,\mathrm{snap}}$ is~$13{,}237$
 as there are in total~$13{,}238$ parcels.
-When we zoom out far enough so that~$E_{t,\mathrm{snap}}$ reaches its maximum value,
+When we zoom out far enough 
+so that~$E_{t,\mathrm{snap}}$ reaches its maximum value,
 the scale denominator will arrive at~$1{,}150{,}565$
 according to \eq\ref{eq:S_t_snap}.
 At that moment, all the parcels are merged into one single parcel
 (see \figs\ref{fig:data}b).
+
 
 Parameter~$N_\mathrm{parallel}$, 
 the maximum number of parallel events mentioned in \sect\ref{sec:greedy_algo},
@@ -537,7 +551,8 @@ Integrate split operation into our method.
 evenly distribute the merging events for each step
 
 When we remove a triangle by slicing the SSC, 
-we may want to keep three vertices of the triangle instead of making four vertices.
+we may want to keep three vertices of the triangle 
+instead of making four vertices.
 In this case, the polyhedron (with five faces) should have curly edges,
 which is also known as a \emph{curved polyhedron}.
 $\cos, \sin$.

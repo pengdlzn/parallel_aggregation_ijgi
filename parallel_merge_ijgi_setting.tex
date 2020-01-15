@@ -32,8 +32,12 @@
 %% Please use the following mathematics environments: Theorem, Lemma, Corollary, Proposition, Characterization, Property, Problem, Example, ExamplesandDefinitions, Hypothesis, Remark, Definition, Notation, Assumption
 %% For proofs, please use the proof environment (the amsthm package is loaded by the MDPI class).
 
-
-
+%so that we have more tolerance for large figures
+%large figure is less likely to push to the end of the document
+\renewcommand{\textfraction}{0.01}
+\renewcommand{\topfraction}{0.99}
+\renewcommand{\bottomfraction}{0.99}
+\renewcommand{\dbltopfraction}{0.99} % fit big float above 2-col. text
 
 \graphicspath{{images/}}
 
