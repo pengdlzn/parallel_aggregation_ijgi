@@ -119,7 +119,7 @@ Data structure Space Scale Cube \citep{vanOosterom2014tGAPSSC}
 can be used to store the merging sequence and 
 to output a map at any scale.
 
-\begin{figure}[htb]
+\begin{figure}[tb]
 \centering
 \includegraphics[page=2]{Intro}
 \caption{An merging sequence of land-cover parcels; 
@@ -147,7 +147,7 @@ A simple way to find parallel steps is to employ a greedy algorithm.
 If we want to find parallel steps of higher quality, 
 then we need to use some optimization.
 
-\begin{figure}[htb]
+\begin{figure}[tb]
 \centering
 \includegraphics[width=\columnwidth]{parallel_comparison}
 \caption{Processing merging steps in a sequential way (above) or a parallel way (below). 
@@ -235,7 +235,10 @@ should be kept according to that given scale.
 
 %
 
-\section{A Greedy Algorithm}
+\section{Methodology}
+
+\subsection{A Greedy Algorithm}
+\label{sec:greedy_algo}
 
 %We define an \emph{event} as merging a small parcel into a neighbor, 
 %where the color of the small parcel gradually changes 
@@ -251,68 +254,84 @@ should be kept according to that given scale.
 %before the next merging step takes place (all sequential). 
 %In this way, each event has more time to be observed by users,
 %resulting in more smooth zooming. 
-%Furthermore, we require that 
-%all the pairs of parcels involved in the merging events of a step 
-%do not have any common neighbors, 
-%which makes the merging events independent from each other.
-%There are two benefits of this independency.
-%First, it is easy for us to maintain the topology of the map.
-%Second, users can more easily understand the events 
-%than merging several parcels into a single one.
+
 
 
 We define an \emph{event} as merging a small parcel into a neighbor.
-For example, 
+For example, \fig\ref{fig:event_and_step}b is obtained from 
+\fig\ref{fig:event_and_step}a by one merging event,
+where the dashed rounded polygon marks the new parcel from the merging.
+Similarly, \fig\ref{fig:event_and_step}c is obtained from 
+\fig\ref{fig:event_and_step}a by two merging events.
 We define a \emph{step} as 
 a set of merging events happening at the same time.
+For example, \fig\ref{fig:event_and_step}b is obtained from 
+\fig\ref{fig:event_and_step}a by one merging step,
+and \fig\ref{fig:event_and_step}c by another merging step.
 
-\begin{figure}[htb]
+
+\begin{figure}[tb]
 \centering
 \includegraphics[page=1]{greedy_algorithm}
-\caption{Merging event and merging step. 
-Figure (b) is obtained }
-\label{fig:greedy_algorithm}
+\caption{Illustration of the merging event and the merging step. 
+Each path shows a merging step. 
+A merging step consists one or more merging events.}
+\label{fig:event_and_step}
 \end{figure}
 
-We may have $400$ merging events.
-An merging step consists of one or many merging events.
-We would like the steps to be as few as possible.
 
+We require that 
+all the pairs of parcels involved in the merging events of a step 
+do not have any common neighbors, 
+which makes the merging events independent from each other.
+There are two benefits of this independency.
+First, it is easy to maintain the topology of the map.
+When a pair of parcels have been merged, 
+we must update the adjacent parcels in order to maintain the topology.
+If an adjacent parcel is involved in another merging event,
+then it will be complicated to update the parcel for the two merging events.
+Second, users can more easily understand the events 
+than merging several parcels into a single one,
+where the latter is a traditional way of merging.
+In order to realize the requirement, 
+we block the neighbors of the selected parcels of merging events in a step
+(see \fig\ref{fig:blocked_polygons}).
+First, the adjacent parcels are blocked.
+Second, the neighbors
+of the adjacent polygons are blocked (see \fig\ref{fig:blocked_polygons}a).
+When searching for another merging event for the step, 
+we select the smallest parcel and its most compatible neighbor
+from the free parcels (see \fig\ref{fig:blocked_polygons}b).
 
-When a pair of polygons have been selected for an merging event, 
-some polygons need to be blocked (see \fig\ref{fig:bloked_polygons}).
-First, the pair of two polygons are blocked so that
-they will not be selected for another merging event.
-Second, the adjacent polygons of the pair of polygons are blocked.
-The reason is that, when a pair of polygons have been merged, 
-we must update the adjacent polygons in order to maintain the topology.
-If an adjacent polygon is involved in another merging event,
-then it will be a mess to update for the two merging events.
-Third, the neighbors (except the initial pair of polygons) 
-of the adjacent polygons are blocked.
-The reason is that if a neighbor is involved in an merging event,
-then an adjacent polygon will be updated from two merging events,
-which may bring conflicts.
-
-Our algorithm for an merging step works as follows.
-The algorithm selects the smallest polygon and finds the most-compatible adjacent polygon.
-The algorithm define an merging event based on this pair of polygons 
-and blocks the surrounding polygons.
-Based on the unblocked polygons, the algorithm defines another merging event.
+We use a greedy algorithm to find the merging events for a merging step.
+The algorithm selects the smallest parcel and 
+finds the most compatible neighbor.
+The algorithm defines an merging event based on this pair of parcels 
+and blocks the surrounding parcel (see \fig\ref{fig:blocked_polygons}a).
+From the unblocked polygons, the algorithm defines another merging event
+(see \fig\ref{fig:blocked_polygons}b).
 This process is iterated 
-until the (users-specified) maximum number of merging events is reached or 
+until the (users-specified) maximum number of merging events, 
+$N_\mathrm{parallel}$, is reached or 
 there is no available merging event anymore.
 Up to this point, finding merging events for an merging step is finished.
-Then the blocked polygons are released, and the finding for the next steps starts.
+Then the blocked polygons are released, 
+and the finding for the next steps starts.
 
 
-\begin{figure}[htb]
+\begin{figure}[tb]
 \centering
 \includegraphics[]{blocked_polygons}
-\caption{At a step, once the dark parcels are selected for merging, 
-the neighbors are blocked for being involved for parallel events at the same step,
-which makes it easy for us to maintain the topology of a map.}
-\label{fig:bloked_polygons}
+\caption{(a) From all the free parcels,
+a smallest one (marked by the small circle) is selected to merge into
+its most compatible neighbor (marked by the larger circle).
+Then the surrounding parcels are blocked (marked by the crosses).
+(b) In order to find parallel merging events, 
+a smallest parcel from the remaining free parcels
+is selected to merge with the most compatible neighbor,
+and the surrounding parcels are blocked.
+}
+\label{fig:blocked_polygons}
 \end{figure}
 
 
@@ -338,25 +357,150 @@ which makes it easy for us to maintain the topology of a map.}
 
 
 
-\section{Smooth Merging}
+\subsection{Smooth Merging}
+
+In order to provide map users with smooth merging
+so that they easily understand the changes of a map,
+we expand a parcel over another parcel
+(see \fig\ref{fig:smooth_merging}).
+This expansion is realized by the \emph{eater} of 
+\citet{Suba2014Merge}.
+Note that the common boundary of the two parcels disappears
+very shortly after the expansion starts;
+the common boundary exists only in \fig\ref{fig:smooth_merging}a but not in
+\fig\ref{fig:smooth_merging}b,
+\fig\ref{fig:smooth_merging}c, or
+\fig\ref{fig:smooth_merging}d.
 
 
-
-\begin{figure}[htb]
+\begin{figure}[tb]
 \centering
 \includegraphics[page=1]{smooth_merging}
-\caption{At a step, once the dark parcels are selected for merging, 
-the neighbors are blocked for being involved for parallel events at the same step,
-which makes it easy for us to maintain the topology of a map.}
+\caption{pass.}
 \label{fig:smooth_merging}
 \end{figure}
 
 
-\section{Snapping to Certain Steps}
-We may have $400$ merging events.
+\subsection{Snapping to Certain Steps}
+\label{sec:snap}
+
+For a zooming action, 
+we always snap the map to a certain step
+so that users will not see a merging operation stops half-way.
+In order to do that, we store the information into 
+a JSON file (JavaScript Object Notation File).
+For example, given a base map of land-cover parcels,
+we want to parallelly merge these parcels to generate a map
+at a smaller scale.
+If the parallel event numbers of the merging steps are 
+$60, 60, 60, 60, 60, 50, 50, 50, 30, 35$, and $35$ ($11$ steps in total),
+then the content of the JSON file is
+$$\{\textrm{"eventnum\_repetition"}: [[60, 5], [50, 3], [30, 1], [35, 2]]\},$$
+where each pair of numbers in the inner square brackets 
+represent the event number and the repeated times.
+
+
+When a user opened our map website in a web browser,
+the JSON file will be transferred to the client.
+The content of the file will be unpacked as a list of numbers 
+as~$L_\mathrm{event} = 
+[0, 60, 120, 180, 240, 300, 350, 400, 450, 480, 515, 550]$.
+According to how much a user has zoomed,
+a scale, say $1:S_t$, can be computed.
+According to \citet{Huang2016Webmap},
+the number of merging events that should be processed can be computed by
+\begin{equation}
+\label{eq:E_t}
+E_t = N_b \left(1-\frac{S^2_b}{S^2_t}\right),
+\end{equation}
+where parameter~$S_b$ is the scale denominator of the base map,
+and parameter~$N_b$ is the number of parcels on the base map.
+In our example regarding to list~$L_\mathrm{event}$,
+if event number~$E_t \le 0$, the base map should be presented;
+if $E_t \ge 550$, the map with all the merging events having been processed
+should be presented.
+Otherwise, if $0<E_t < 550$, we snap event number~$E_t$ 
+to the closest value of list~$L_\mathrm{event}$,
+which is marked by $E_{t,\mathrm{snap}}$.
+The scale denominator corresponding to event number~$E_{t,\mathrm{snap}}$
+can be computed by 
+\begin{equation}
+\label{eq:S_t_snap}
+S_{t,\mathrm{snap}} = S_b \sqrt{\frac{N_b}{N_b-E_{t,\mathrm{snap}}}}.
+\end{equation}
+Note that \eq\ref{eq:S_t_snap} is an inverse function of \eq\ref{eq:E_t}.
+At the end of the zooming, the map will stop at scale~$1:S_{t,\mathrm{snap}}$.
+
+
+
 
 
 \section{Case Study}
+
+We have used the ``Eater'' of \citet{Suba2014Merge},
+implemented in Python, 
+to generate the elements of the SSC \citep{vanOosterom2014tGAPSSC} 
+and saved these elements in an OBJ file\footnote{%
+Wavefront .obj file:
+\url{https://en.wikipedia.org/wiki/Wavefront_.obj_file},
+accessed: Jan 14, 2020.}.
+The OBJ file will be sent to the client 
+when a user visits our website to access the map.
+On the client side,
+the content of the OBJ file is processed and submitted to GPU to display,
+which was implemented in JavaScript.
+
+The dataset used in this case study is a subset of TOP10NL\footnote{%
+More information about TOP10NL can be found at
+\url{https://zakelijk.kadaster.nl/-/topnl},
+accessed: Jan 14, 2020.},
+produced by Kadaster.
+\figs\ref{fig:data}a and~\ref{fig:data}c show the map and the legend.
+Because the base scale is $1:10{,}000$, 
+we have~$S_b = 10{,}000$ for \eq\ref{eq:S_t_snap}.
+The maximum value of event number~$E_{t,\mathrm{snap}}$ is~$13{,}237$
+as there are in total~$13{,}238$ parcels.
+When we zoom out far enough so that~$E_{t,\mathrm{snap}}$ reaches its maximum value,
+the scale denominator will arrive at~$1{,}150{,}565$
+according to \eq\ref{eq:S_t_snap}.
+At that moment, all the parcels are merged into one single parcel
+(see \figs\ref{fig:data}b).
+
+Parameter~$N_\mathrm{parallel}$, 
+the maximum number of parallel events mentioned in \sect\ref{sec:greedy_algo},
+was set to~$200$.
+The content in the JSON file (see \sect\ref{sec:snap}) is 
+\makeatletter
+\def\verbatim@font{\normalfont\rmfamily}
+\makeatother
+\begin{verbatim}
+{"eventnum_repetition": [[200, 46], [191, 1], [183, 1], [178, 1], [167, 1], [165, 1], [146, 1], [145, 1], [136, 1], 
+[135, 1], [127, 1], [124, 1], [108, 1], [103, 1], [107, 1], [96, 1], [95, 1], [87, 1], [82, 1], [81, 1], [82, 1],  [78, 1], 
+[75, 1], [69, 1], [66, 1], [61, 1], [56, 1], [57, 1], [54, 1], [48, 1], [47, 1], [49, 1], [44, 1], [45, 1], [42, 1], [37, 1], [41, 1], 
+[34, 1], [36, 1], [29, 1], [28, 1], [27, 1], [24, 1], [25, 1], [20, 2], [22, 1], [21, 1], [19, 3], [15, 1], [13, 1], [12, 1], [13, 1], 
+[12, 1], [11, 1], [9, 1], [12, 3], [9, 1], [10, 2], [9, 1], [7, 1], [6, 1], [7, 2], [5, 2], [6, 4], [5, 3], [4, 2], [3, 7], [2, 4], [1, 2], 
+[2, 1], [1, 11]]}.
+\end{verbatim}
+There are~$150$ steps in total, 
+which can be computed by summing up the second values of all the pairs.
+
+
+
+
+
+
+
+
+\begin{figure}[tb]
+\centering
+\includegraphics[page=1]{data}
+\caption{The dataset represents the place 
+    to the southeast of Maastricht, The Netherlands.}
+\label{fig:data}
+\end{figure}
+
+
+
 
 The number of times that we compromised.
 Because some polygons are blocked during finding merging events, 
@@ -366,6 +510,17 @@ among all the polygons at that step.
 This situation happens $XXX$ times in our data.
 For the same reason, we cannot always use the most compatible adjacent polygon,
 which happens $XXX$ times.
+
+
+
+
+
+
+
+
+
+
+
 
 \section{Concluding Remarks}
 
@@ -389,12 +544,10 @@ $\cos, \sin$.
 
 
 
-\begin{figure}[htb]
+\begin{figure}[tb]
 \centering
 \includegraphics[page=2]{smooth_merging}
-\caption{At a step, once the dark parcels are selected for merging, 
-the neighbors are blocked for being involved for parallel events at the same step,
-which makes it easy for us to maintain the topology of a map.}
+\caption{Pass.}
 \label{fig:smooth_merging_future}
 \end{figure}
 
