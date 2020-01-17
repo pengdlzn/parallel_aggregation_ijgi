@@ -166,6 +166,10 @@ What algorithm should we use
 (e.g., dynamic programming, \Astar, or integer linear programming)?
 How much time is gained for users to observe the merging steps on the screen?
 How to store the parallel merging steps?
+
+There are already many algorithms for continuous map generalization.
+To adapt them into a web environment still needs a lot of effort.
+This paper contributes to merging parcels in a web environment. 
  
 \section{Related Work}
 \citet{vanOosterom2005} proposed a greedy algorithm 
@@ -229,6 +233,7 @@ should be kept according to that given scale.
 \citet{Thiemann2018LandCover}
 
 \citet{Meijers2020Web}
+
 
 
 %\citet{Meijers2015Parallel}
@@ -363,8 +368,18 @@ In order to provide map users with smooth merging
 so that they easily understand the changes of a map,
 we expand a parcel over another parcel
 (see \fig\ref{fig:smooth_merging}).
-This expansion is realized by the \emph{eater} of 
-\citet{Suba2014Merge}.
+This expansion is based on slicing the space-scale cube shown in
+\fig\ref{fig:smooth_merging_two_rectangles}.
+For example, \figs\ref{fig:smooth_merging}a,
+\ref{fig:smooth_merging}b, and \ref{fig:smooth_merging}c
+are respectively obtained from slicing the cube 
+at the bottom, the middle, and the top.
+The details of slicing a cube can be found in \citet{Meijers2020Web}.
+The cube of \fig\ref{fig:smooth_merging_two_rectangles} was built 
+based on the \emph{Eater} of \citet{Suba2014Merge}.
+The Eater was used because it provides a solution 
+for a parcel with any kind of shape, which is more robust than
+\emph{Single flat plane} and \emph{Zipper} \citep{Suba2014Merge}.
 Note that the common boundary of the two parcels disappears
 very shortly after the expansion starts;
 the common boundary exists only in \fig\ref{fig:smooth_merging}a but not in
@@ -372,20 +387,36 @@ the common boundary exists only in \fig\ref{fig:smooth_merging}a but not in
 \fig\ref{fig:smooth_merging}c, or
 \fig\ref{fig:smooth_merging}d.
 
-\begin{figure}[tb]
+
+\begin{figure}[tb]	
+\centering
+\centering
+\includegraphics[page=1]{smooth_merging}
+\caption{pass.}
+\label{fig:smooth_merging}
+%
+\vspace{6mm}
+%
 \centering
 \includegraphics[scale=0.2]{smooth_merging_two_rectangles}
 \caption{pass.}
 \label{fig:smooth_merging_two_rectangles}
 \end{figure}
 
-\begin{figure}[tb]
-\centering
-\includegraphics[page=1]{smooth_merging}
-\caption{pass.}
-\label{fig:smooth_merging}
-\end{figure}
 
+%\begin{figure}[tb]
+%\centering
+%\includegraphics[page=1]{smooth_merging}
+%\caption{pass.}
+%\label{fig:smooth_merging}
+%\end{figure}
+
+%\begin{figure}[tb]
+%\centering
+%\includegraphics[scale=0.2]{smooth_merging_two_rectangles}
+%\caption{pass.}
+%\label{fig:smooth_merging_two_rectangles}
+%\end{figure}
 
 \subsection{Snapping to Certain Steps}
 \label{sec:snap}
@@ -438,7 +469,7 @@ Note that \eq\ref{eq:S_t_snap} is an inverse function of \eq\ref{eq:E_t}.
 At the end of the zooming, the map will stop at scale~$1:S_{t,\mathrm{snap}}$.
 
 
-
+%\subsection{Line simplification (smoothly moving vertices for the SSC)}
 
 
 \section{Case Study}
