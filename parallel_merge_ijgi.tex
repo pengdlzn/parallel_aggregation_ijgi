@@ -106,30 +106,81 @@ maintaining map consistency over scale change.
 
 \section{Introduction}
 
-Land-cover parcels are importance on maps. 
+When map users are reading digital maps,
+they expect different levels of detail (LoDs).
+For example, they may want to see individual buildings when zooming in
+and see built-up areas when zooming out.
+That is why geographical information is dependent on the scale
+\citep{Muller1995Generalization,Weibel1997}. 
+In order to prepare map data for different scales,
+map generalization is used to generate coarser data, 
+for maps at smaller scales,
+from a detailed map.
+A lot of work has been devoted to map generalization.
+\citet{Mackaness2017Generalization} gave a taxonomy of 
+generalization algorithms, 
+including selection, simplification, aggregation, and so on.
+Often, a multi-representation database is used to store
+maps at different scales and to send proper data to clients on request
+\citep[\eg][]{Hampe2004multiple}.
+However, large discrete changes between different map representation
+may confuse users,
+so continuous map generalization (CMG) is needed to
+provide smooth zooming.
+Algorithms of CMG have been proposed 
+to morph raster maps
+\citep[\eg][]{Pantazis2009a,Pantazis2009b}, 
+to morph polylines
+\citep[\eg][]{Noellenburg2008,Peng2013LSA,Deng2015,Li2017Annealing},
+to generalize buildings
+\citep[\eg][]{Li2017_Building,Peng2017Building,Touya2017Progressive},
+to transform road networks
+\citep[\eg][]{Suba2016Road,Chimani2014Eat},
+and to transform administrative boundaries
+\citep[\eg][]{Peng2016Admin}.
+
+Land-cover parcels are important on maps. 
 When users zoom out,
 some land-cover parcels become too tiny to be seen,
 which result in visual clutter.
-We try to avoid it
-by merging parcels one by one during zooming out
-(see \fig\ref{fig:aggregation_sequence}).
-Also, this gradual fashion allows users 
-to follow the zooming more easily.
-Data structure Space Scale Cube \citep{vanOosterom2014tGAPSSC} 
-can be used to store the merging sequence and 
-to output a map at any scale.
+The clutter can be avoided by merging those tiny parcels 
+with their neighbors.
+For example, \citet{haunert2008f} developed a method based on
+mixed-integer programming to merge land-cover parcels
+for a map at a certain scale.
+However, if zooming is realized by switching between
+some levels of map representations, 
+large changes usually happen, 
+which is difficult for map users to understand.
+To provide small changes, 
+\citet{vanOosterom2005} proposed 
+the topological Generalized Area Partitioning (tGAP) tree,
+where, at each step, a single parcel will be merged into
+its most compatible neighbor.
+Further, a space-scale cube (SSC) can be built so that 
+map users can view a map at arbitrary scale by slicing the SSC.
 
-\begin{figure}[tb]
-\centering
-\includegraphics[page=2]{Intro}
-\caption{An merging sequence of land-cover parcels; 
-taken from \citet[][\sect1.3]{Peng2019Thesis}.}
-\label{fig:aggregation_sequence}
-\end{figure}
+
+%We try to avoid it
+%by merging parcels one by one during zooming out
+%(see \fig\ref{fig:aggregation_sequence}).
+%Also, this gradual fashion allows users 
+%to follow the zooming more easily.
+%Data structure Space Scale Cube \citep{vanOosterom2014tGAPSSC} 
+%can be used to store the merging sequence and 
+%to output a map at any scale.
+%
+%\begin{figure}[tb]
+%\centering
+%\includegraphics[page=2]{Intro}
+%\caption{An merging sequence of land-cover parcels; 
+%taken from \citet[][\sect1.3]{Peng2019Thesis}.}
+%\label{fig:aggregation_sequence}
+%\end{figure}
 
 When users zoom on maps, 
 they do not want to wait for too long 
-in order to see the next level.
+to see the desired level.
 For example, they may not want to wait for more than one second,
 but there may be 50 merging steps happening in the time interval
 (400 steps in total for all the time intervals).
@@ -232,9 +283,18 @@ should be kept according to that given scale.
 
 \citet{Thiemann2018LandCover}
 
-\citet{Meijers2020Web}
+\citet{Meijers2020Web} explained the principles of 
+implementing a web map of land-cover parcels.
+First, they generated an SSC, 
+where a parcel on map becomes a polyhedron in the SSC.
+Second, they showed how to slice the SSC 
+to output a web map at a given scale.
+The slicing is based on the GPU at the client side.
+Third, they made chunks of the SSC 
+so that they were able to send only the data of the place
+where a map user was reading.
 
-
+\citet{Dumont2020MultiScale}
 
 %\citet{Meijers2015Parallel}
 
@@ -392,14 +452,16 @@ the common boundary exists only in \fig\ref{fig:smooth_merging}a but not in
 \centering
 \centering
 \includegraphics[page=1]{smooth_merging}
-\caption{pass.}
+\caption{A smooth way of merging two parcels,
+    where the larger parcel gradually expands over the smaller one.}
 \label{fig:smooth_merging}
 %
 \vspace{6mm}
 %
 \centering
 \includegraphics[scale=0.2]{smooth_merging_two_rectangles}
-\caption{pass.}
+\caption{The space-scale cube for the merging 
+    in \fig\ref{fig:smooth_merging}.}
 \label{fig:smooth_merging_two_rectangles}
 \end{figure}
 
@@ -593,7 +655,11 @@ $\cos, \sin$.
 \begin{figure}[tb]
 \centering
 \includegraphics[page=2]{smooth_merging}
-\caption{Pass.}
+\caption{A smooth way of merging two parcels.
+    The larger parcel expands over the smaller one.
+    At the same time, 
+    the smaller parcel gradually adapt to the color of the larger one,
+    and the common boundary becomes thinner and thinner.}
 \label{fig:smooth_merging_future}
 \end{figure}
 
