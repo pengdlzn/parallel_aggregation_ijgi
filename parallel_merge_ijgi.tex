@@ -222,17 +222,6 @@ Finally, \sect\ref{sec:concluding_remarks} draws our conclusion
 and indicate our future work.
 
 
-%We define that a merging event consists of 
-%one or more merging steps happening at the same time.
-%Some research questions are as follows.
-%What aspects should we optimize 
-%(e.g., minimizing the number of merging events or 
-%assigning similar numbers of merging steps to each event)?
-%What algorithm should we use 
-%(e.g., dynamic programming, \Astar, or integer linear programming)?
-%How much time is gained for users to observe the merging steps on the screen?
-%How to store the parallel merging steps?
-
 
 
 
@@ -327,38 +316,22 @@ where a map user was reading.
 \section{Methodology}
 \label{sec:methodology}
 
-\subsection{A Greedy Algorithm}
-\label{sec:greedy_algo}
-
-%We define an \emph{event} as merging a small parcel into a neighbor, 
-%where the color of the small parcel gradually changes 
-%to the color of the neighbor
-%or the neighbor gradually expands over the small parcel.
-%However, because of the given sequence 
-%in which the events are processed one by one, 
-%the map users still experience shock changes 
-%(because the merging transition time of their zooming out can be short).
-%We try to produce smooth changes by paralleling the events.
-%We define a \emph{step} as a set of merging events happening at the same time.
-%In our method, a merging step is completely processed 
-%before the next merging step takes place (all sequential). 
-%In this way, each event has more time to be observed by users,
-%resulting in more smooth zooming. 
-
-
 
 We define an \emph{event} as merging a small parcel into a neighbor.
 For example, \fig\ref{fig:event_and_step}b is obtained from 
-\fig\ref{fig:event_and_step}a by one merging event,
-where the dashed rounded polygon marks the new parcel from the merging.
+\fig\ref{fig:event_and_step}a by processing one merging event,
+where the dashed polygon marks the new parcel from the merging.
 Similarly, \fig\ref{fig:event_and_step}c is obtained from 
-\fig\ref{fig:event_and_step}a by two merging events.
+\fig\ref{fig:event_and_step}a by processing two merging events.
 We define a \emph{step} as 
 a set of merging events happening at the same time.
 For example, \fig\ref{fig:event_and_step}b is obtained from 
-\fig\ref{fig:event_and_step}a by one merging step,
-and \fig\ref{fig:event_and_step}c by another merging step.
-
+\fig\ref{fig:event_and_step}a by processing one merging step,
+which consists of one merging event.
+\fig\ref{fig:event_and_step}c by processing another merging step,
+which consists of two merging event.
+In our method, a merging step is completely processed 
+before the next step takes place (all sequential). 
 
 \begin{figure}[tb]
 \centering
@@ -393,22 +366,6 @@ When searching for another merging event for the step,
 we select the smallest parcel and its most compatible neighbor
 from the free parcels (see \fig\ref{fig:blocked_polygons}b).
 
-We use a greedy algorithm to find the merging events for a merging step.
-The algorithm selects the smallest parcel and 
-finds the most compatible neighbor.
-The algorithm defines an merging event based on this pair of parcels 
-and blocks the surrounding parcel (see \fig\ref{fig:blocked_polygons}a).
-From the unblocked polygons, the algorithm defines another merging event
-(see \fig\ref{fig:blocked_polygons}b).
-This process is iterated 
-until the (users-specified) maximum number of merging events, 
-$N_\mathrm{parallel}$, is reached or 
-there is no available merging event anymore.
-Up to this point, finding merging events for an merging step is finished.
-Then the blocked polygons are released, 
-and the finding for the next steps starts.
-
-
 \begin{figure}[tb]
 \centering
 \includegraphics[]{blocked_polygons}
@@ -424,6 +381,41 @@ and the surrounding parcels are blocked.
 \label{fig:blocked_polygons}
 \end{figure}
 
+
+
+\subsection{A Greedy Algorithm}
+\label{sec:greedy_algo}
+
+
+We use a greedy algorithm to find the merging events of each step.
+The algorithm selects the smallest parcel and merge it with
+the most compatible neighbor (that shares boundary).
+There are many ways of defining the most compatible neighbor.
+For example, \citet{Cheng2006} proposed three ways, i.e.,
+the neighbor has the largest size, 
+shares longest boundary with the smallest parcel,
+or is closest to the smallest parcel in land-cover type. 
+\citet{Peng2017AStar} proposed that 
+the neighbor should have a close land-cover type
+to the smallest parcel
+and the combination of the two parcels should be compact;
+they defined the type distance based on a binary tree
+according to the code of each land-cover type.
+
+In this paper, we currently consider the most compatible neighbor
+as the one shares the longest common boundary with the smallest parcel.
+The greedy algorithm uses the two parcels for a merging event
+and blocks the surrounding parcel (see \fig\ref{fig:blocked_polygons}a).
+From the unblocked parcels, the algorithm finds another pair of parcels
+for another merging event
+(see \fig\ref{fig:blocked_polygons}b).
+This finding process is iterated 
+until the (users-specified) maximum number of merging events, 
+$N_\mathrm{parallel}$, is reached or 
+there is no available pair of parcels for merging event anymore.
+Up to this point, finding merging events for a step is finished.
+Then the blocked parcels are released, 
+and the finding for the next step starts.
 
 
 
@@ -447,38 +439,65 @@ and the surrounding parcels are blocked.
 
 \subsection{Integrating the parallel events into the tGAP}
 
-\citet[\fig5.9b]{Meijers2011Thesis} designed a face table 
+\citet[\fig5.9b]{Meijers2011Thesis} designed a table 
 to record the face information of a tGAP.
+The table contains columns \emph{face\_id}, 
+\emph{imp\_low}, \emph{imp\_high}, \emph{imp\_own},
+\emph{feature\_class\_id}, \emph{area}, and \emph{bbox}.
 We add columns \emph{step\_low} and \emph{step\_high} into the table, 
 which make it easy to see when a face should appear or disappear 
-(see \tbls\ref{tab:face_tgap} and~\ref{tab:face_tgap_parallel}).
+(see \tbls\ref{tab:face_tgap} and~\ref{tab:face_tgap_parallel},
+where some columns are hidden).
+That is, when the merging step arrives at the step\_low of a face,
+then the face should appear;
+when the merging step arrives at the step\_high of a face,
+then the face should disappear;
+
 When switching from merging one pair at each step 
 (sequence~I of \fig\ref{fig:face_tgap})
 to merging parallelly (sequence~II of \fig\ref{fig:face_tgap}),
-we see that the step\_high values of faces~1 and~2 change form~1 to~2
-(the new values are in bold).
-We also see that the step\_low value of faces~7 changes form~1 to~2.
+we see that the step\_high values of faces~1 and~2 change from~1 to~2
+(see \tbl\ref{tab:face_tgap_parallel}, the new values are in bold).
+We also see that the step\_low value of faces~7 changes from~1 to~2
+(see \tbl\ref{tab:face_tgap_parallel}).
+
+\textbf{explain the start step!!!}
+When we merge a pair of parcels by expanding one over the other one,
+we must know when we start the expansion.
+A simple way is to add a column, say, \emph{step\_expand} 
+into the face table to record the step of starting expansion,
+but this will increase the size of the face table.
+To keep the face table compact,
+we compute value step\_expand on the fly by
+$$
+step\_expand_i = 
+$$
+
+
+According to \tbl\ref{tab:face_tgap}, 
+face~1 and face~2 are merged from step~0 to step~1,
+which is before the merging of face~5 and face~6 from step~1 to step~2.
+According to \tbl\ref{tab:face_tgap_parallel}, 
+the merging of face~1 and face~2 and the merging of face~5 and face~6
+happen parallelly from step~0 to step~2.
+
 Then, the space-scale cube will be built 
 according to the records of \tbl\ref{tab:face_tgap_parallel}.
 
 
-\noindent
-\begin{minipage}{\textwidth}
-\centering
-\begin{figure}[H]
+\begin{figure}[tb]
 \centering
 \includegraphics[page=2]{greedy_algorithm}
 \caption{Merging one pair of parcels at each step (sequence~I), 
     and merging two pairs of parcels parallelly (sequence~II).}
 \label{fig:face_tgap}
-\end{figure}
+\vspace{6mm} %for some reason, the space below the caption is not enough
 %
 %
 %
 \parbox{.49\linewidth}{
-\captionof{table}{face table of the merging sequence 
-    without parallel events,
-    corresponding to sequence~I of \fig\ref{fig:face_tgap}.
+\captionof{table}{Face table of merging sequence~I 
+    of \fig\ref{fig:face_tgap}.
 }
 \label{tab:face_tgap}
 \centering
@@ -498,8 +517,8 @@ face\_id &   step\_low   & step\_high    \\ \hline
 %
 %
 \parbox{.49\linewidth}{
-\captionof{table}{face table of the merging sequence with parallel events,
-    corresponding to sequence~II of \fig\ref{fig:face_tgap}.
+\captionof{table}{Face table of merging sequence~II 
+    of \fig\ref{fig:face_tgap}.
 }
 \label{tab:face_tgap_parallel}
 \centering
@@ -516,15 +535,14 @@ face\_id &   step\_low   & step\_high    \\ \hline
 8       &     2         &     3          \\ \hline
 \end{tabular}
 }
-\end{minipage}
-
+\end{figure}
 
 
 \subsection{Smooth Merging}
 
-In order to provide map users with smooth merging
-so that they easily understand the changes of a map,
-we expand a parcel over another parcel
+In order to provide smooth zooming of merging
+so that map users easily understand the changes,
+we merge by expanding a parcel over another parcel
 (see \fig\ref{fig:smooth_merging}).
 This expansion is based on slicing the space-scale cube shown in
 \fig\ref{fig:smooth_merging_two_rectangles}.
@@ -583,23 +601,26 @@ the common boundary exists only in \fig\ref{fig:smooth_merging}a but not in
 For a zooming action, 
 we always snap the map to a certain step
 so that users will not see a merging operation stops half-way.
-In order to do that, we store the information into 
+In order to do that, we store the information of
+merging events and merging steps into 
 a JSON file (JavaScript Object Notation File).
 For example, given a base map of land-cover parcels,
 we want to parallelly merge these parcels to generate a map
 at a smaller scale.
-If the parallel event numbers of the merging steps are 
+If the parallel-event numbers of the merging steps are 
 $60, 60, 60, 60, 60, 50, 50, 50, 30, 35$, and $35$ ($11$ steps in total),
 then the content of the JSON file is
-$$\{\textrm{"eventnum\_repetition"}: [[60, 5], [50, 3], [30, 1], [35, 2]]\},$$
+$$
+\{\textrm{"eventnum\_repetition"}: [[60, 5], [50, 3], [30, 1], [35, 2]]\},
+$$
 where each pair of numbers in the inner square brackets 
-represent the event number and the repeated times.
+represent the event number and the repeat times.
 
 
-When a user opened our map website in a web browser,
+When a user opens our web map,
 the JSON file will be transferred to the client.
-The content of the file will be unpacked as a list of numbers 
-as~$L_\mathrm{event} = 
+The content of the file will be unpacked as 
+a list of numbers~$L_\mathrm{event} = 
 [0, 60, 120, 180, 240, 300, 350, 400, 450, 480, 515, 550]$.
 According to how much a user has zoomed,
 a scale, say $1:S_t$, can be computed.
@@ -616,7 +637,7 @@ if event number~$E_t \le 0$, the base map should be presented;
 if $E_t \ge 550$, the map with all the merging events having been processed
 should be presented.
 Otherwise, if $0<E_t < 550$, we snap event number~$E_t$ 
-to the closest value of list~$L_\mathrm{event}$,
+to the closest value in list~$L_\mathrm{event}$,
 which is marked by $E_{t,\mathrm{snap}}$.
 The scale denominator corresponding to event number~$E_{t,\mathrm{snap}}$
 can be computed by 
@@ -625,7 +646,8 @@ can be computed by
 S_{t,\mathrm{snap}} = S_b \sqrt{\frac{N_b}{N_b-E_{t,\mathrm{snap}}}}.
 \end{equation}
 Note that \eq\ref{eq:S_t_snap} is an inverse function of \eq\ref{eq:E_t}.
-At the end of the zooming, the map will stop at scale~$1:S_{t,\mathrm{snap}}$.
+At the end of the zooming action, 
+the map will stop at scale~$1:S_{t,\mathrm{snap}}$.
 
 
 %\subsection{Line simplification (smoothly moving vertices for the SSC)}
@@ -671,6 +693,15 @@ At that moment, all the parcels are merged into one single parcel
 (see \figs\ref{fig:data}b).
 
 
+\begin{figure}[tb]
+\centering
+\includegraphics[page=1]{data}
+\caption{The dataset represents the place 
+    to the southeast of Maastricht, The Netherlands.}
+\label{fig:data}
+\end{figure}
+
+
 Parameter~$N_\mathrm{parallel}$, 
 the maximum number of parallel events mentioned in \sect\ref{sec:greedy_algo},
 was set to~$200$.
@@ -691,22 +722,6 @@ which can be computed by summing up the second values of all the pairs.
 
 
 
-
-
-
-
-
-\begin{figure}[tb]
-\centering
-\includegraphics[page=1]{data}
-\caption{The dataset represents the place 
-    to the southeast of Maastricht, The Netherlands.}
-\label{fig:data}
-\end{figure}
-
-
-
-
 The number of times that we compromised.
 Because some polygons are blocked during finding merging events, 
 the smallest polygon selected for an merging event 
@@ -716,12 +731,6 @@ This situation happens $XXX$ times in our data.
 For the same reason, 
 we cannot always use the most compatible adjacent polygon,
 which happens $XXX$ times.
-
-
-
-
-
-
 
 
 
@@ -739,7 +748,7 @@ On the client side, web maps are generated by slicing the SSC
 based on the method of \citet{Meijers2020Web}.
 To avoid half-way merging, we require the merging animation 
 to stop at certain steps.
-Our case study shows the effective of our approach.
+Our case study shows the effectiveness of our approach.
 
 
 \subsection{Future Work}
@@ -773,6 +782,26 @@ $\cos, \sin$.
     and the common boundary becomes thinner and thinner.}
 \label{fig:smooth_merging_future}
 \end{figure}
+
+
+
+
+%Some research questions are as follows.
+%What aspects should we optimize 
+%(e.g., minimizing the number of merging events or 
+%assigning similar numbers of merging steps to each event)?
+%What algorithm should we use 
+%(e.g., dynamic programming, \Astar, or integer linear programming)?
+%How much time is gained for users to observe the merging steps on the screen?
+%How to store the parallel merging steps?
+
+
+
+
+
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\section{Patents}
