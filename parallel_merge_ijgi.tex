@@ -11,8 +11,10 @@
 
 %=================================================================
 % Full title of the paper (Capitalized)
-\Title{Merging land-cover parcels parallelly 
-to support smooth zooming of web maps}
+\Title{Paralleling Generalization Operations to Support Smooth Zooming:
+Case Study of Merging Land-Cover Parcels}
+%\Title{Merging land-cover parcels parallelly 
+%to support smooth zooming of web maps}
 
 % Author Orchid ID: enter ID or remove command
 \newcommand{\orcidauthorA}{0000-0000-000-000X} % Add \orcidA{} behind the author's name
@@ -54,15 +56,13 @@ some land-cover parcels become too tiny to be seen,
 which result in visual clutters. 
 To avoid this problem, 
 we merge small parcels into their neighbors to form larger parcels. 
-We define an \emph{event} as merging a small parcel into a neighbor, 
-where the color of the small parcel gradually changes 
-to the color of the neighbor
-or the neighbor gradually expands over the small parcel.
+We define an \emph{event} as merging a small parcel into a neighbor 
+(where the neighbor gradually expands over the small parcel).
 However, because of the given sequence 
 in which the events are processed one by one, 
-the map users still experience shock changes 
+the map users still experience many small shock changes 
 (because the merging transition time of their zooming out can be short).
-We try to produce smooth changes by paralleling the events.
+We try to produce more-smooth changes by paralleling the events.
 We define a \emph{step} as a set of merging events happening at the same time.
 In our method, a merging step is completely processed 
 before the next merging step takes place (all sequential). 
@@ -107,7 +107,7 @@ maintaining map consistency over scale change.
 \section{Introduction}
 
 When map users are reading digital maps,
-they expect different levels of detail (LoDs).
+they expect different levels of detail (LoDs) depending on scale.
 For example, they may want to see individual buildings when zooming in
 and see built-up areas when zooming out.
 That is why geographical information is dependent on the scale
@@ -116,7 +116,7 @@ In order to prepare map data for different scales,
 map generalization is used to generate coarser data 
 for maps at smaller scales,
 from a detailed map.
-A lot of work has been devoted to map generalization.
+A lot of research has been devoted to map generalization.
 \citet{Mackaness2017Generalization} gave a taxonomy of 
 generalization algorithms, 
 including selection, simplification, aggregation, and so on.
@@ -126,7 +126,7 @@ maps at different scales and to send proper data to clients on request
 However, large discrete changes between different map representations
 may confuse users,
 so continuous map generalization (CMG) is needed to
-provide smooth zooming.
+provide smooth scale zoom.
 Algorithms of CMG have been proposed 
 to morph raster maps
 \citep[\eg][]{Pantazis2009a,Pantazis2009b}, 
@@ -138,11 +138,11 @@ to transform road networks
 \citep[\eg][]{Suba2016Road,Chimani2014Eat},
 and to transform administrative boundaries
 \citep[\eg][]{Peng2016Admin}.
-Indeed, there are already many algorithms 
-for continuous map generalization.
-To adapt them into a web environment still needs a lot of effort.
-This paper contributes to merging land-cover parcels 
-in a web environment. 
+%Indeed, there are already many algorithms 
+%for continuous map generalization.
+%To adapt them into a web environment still needs a lot of effort.
+%This paper contributes to merging land-cover parcels 
+%in a web environment. 
 
 
 Land-cover parcels are important on maps. 
@@ -164,10 +164,10 @@ To provide small changes,
 the topological Generalized Area Partitioning (tGAP) tree,
 where at each step a single parcel is merged into
 its most compatible neighbor 
-(see \fig\ref{fig:intro}: a, c, d, e, and~f).
+(see \fig\ref{fig:intro}c--g).
 Further, a space-scale cube (SSC) can be built so that 
-map users can view a map at arbitrary scale by slicing the SSC
-\citep[see][]{Meijers2020Web}.
+map users can view the gradual transition of the merge operation
+by slicing the SSC \citep[see][]{Meijers2020Web}.
 This gradual strategy apparently allows users 
 to follow the zooming more easily.
 
@@ -175,13 +175,14 @@ to follow the zooming more easily.
 \begin{figure}[tb]
 \centering
 \includegraphics[page=1]{introduction}
-\caption{A comparison of traditional map generalization (b),
-map generalization with gradual changes (c--f),
-and map generalization with parallel merging (h).
+\caption{A comparison of traditional map generalization (a--b),
+map generalization with gradual changes (c--g),
+and map generalization with parallel merging (h--j).
 The ellipses show the places where large and discrete changes happen.
 The dashed polygons show the place where a user may focus;
 in the place, the user has twice of the time to perceive the merging
-comparing to the merging of figures c--f.
+comparing to the merging of figures e--g.
+Each arrow indicates that a parcel will be merged into another one. 
 }
 \label{fig:intro}
 \end{figure}
@@ -193,24 +194,25 @@ On a real map, however,
 there are way too many pairs of parcels to merge 
 when users are zooming out.
 If the pairs are processed one by one 
-(e.g., \fig\ref{fig:intro}: a, c, d, e, and~f),
+(e.g., \fig\ref{fig:intro}c--f),
 then the time interval for each merging operation has to be very short.
 For example, a user may still get the impression of
-a shock change from \fig\ref{fig:intro}d to \fig\ref{fig:intro}f
-even when the three parcels on the right-hand side of \fig\ref{fig:intro}d
+a shock change from \fig\ref{fig:intro}e to \fig\ref{fig:intro}g
+even when the three parcels on the right-hand side of \fig\ref{fig:intro}e
 are merged gradually.
 To provide users with more gradual impression, 
 we parallel the merging operations
-(see \fig\ref{fig:intro}: a, g, and~h).
+(see \fig\ref{fig:intro}h--j).
 If we select some of the merging operations
-fairly evenly distributed on the whole map, 
-then there may be only a small number of merging operations 
-happening on the screen,
-which are easy for users to understand the changes.
+fairly evenly distributed on the whole map 
+(there may be only a small number of merging operations 
+happening on the screen),
+then the changes are easy for users to understand
+because these changes now have more time to take place.
 For example, in the focused area, there is only one merging operation 
-from \fig\ref{fig:intro}g to \fig\ref{fig:intro}h
+from \fig\ref{fig:intro}i to \fig\ref{fig:intro}j
 while there are two merging operations  
-from \fig\ref{fig:intro}d to \fig\ref{fig:intro}f;
+from \fig\ref{fig:intro}e to \fig\ref{fig:intro}g;
 a user has twice of the time to perceive the changes of the former,
 comparing to the latter.
 
@@ -234,7 +236,7 @@ to merge land-cover parcels one by one.
 In each iteration, that algorithm takes the least important parcel and 
 merges it into the most compatible neighbor.
 The importance of a parcel is defined 
-based on both the area and the type of the parcel.
+based on both the size and the type of the parcel.
 The compatibility between a pair of parcels is defined based on 
 both the length of the common boundary and the similarity of the types 
 of the pair of parcels. 
@@ -242,7 +244,8 @@ of the pair of parcels.
 to merge land-cover parcels
 based on the \Astar algorithm or an integer linear program.
 A comparison to a greedy algorithm showed that 
-the \Astar algorithm improves the quality of the merging sequences.
+the \Astar algorithm improves the quality of the merging sequences
+in the sense of the type changes and the compactnesses of the parcels.
 \citet{vanOosterom2014Support} pointed out that sequentially merging
 land-cover parcels may result in a suboptimal smooth-zoom effect.
 To provide better visualization, they suggested that
@@ -250,15 +253,27 @@ the merging operations should be paralleled.
 Then, one question is how many operations 
 should be paralleled for a given scale.
 
-\citet{Suba2014Merge} proposed three methods to merge two parcels, 
+\citet{Meijers2020Web} explained the principles of 
+implementing a web map of land-cover parcels.
+First, they generated an SSC, 
+where a parcel on map becomes a polyhedron in the SSC.
+They used the SSC because 
+they wanted the web map to support smooth zoom
+\citep[see][]{vanOosterom2014Support}.
+Second, they showed how to slice the SSC 
+to output a web map at a given scale.
+The slicing is based on the GPU at the client side.
+Third, they made chunks of the SSC 
+so that they were able to send only the data of the place
+where a map user was reading.
+\citet{Suba2014Merge} proposed three methods 
+to merge a pair of parcels in the manner of gradual change, 
 which are the ``Single flat plane'', the ``Zipper'', and the ``Eater''.
 Basically, the \emph{winner} gradually expands over the \emph{loser}.
 We will use the ``Eater'' because it works for all kinds of polygons 
-while the other two methods have limitation in terms of the type of a polygon.
+while the other two methods have limitation 
+in terms of the type of a polygon.
 For example, the two other methods do not work for some concave polygons.
-
-
-
 \citet{Suba2016Road} continuously generalized a planar map of road network.
 At each step, they process the least-important face.
 Taking into account the condition of the face,
@@ -269,10 +284,8 @@ they also observed the number of faces,
 the area of faces, the number of road faces, the number of road edges,
 and the number of operations (merge and split) 
 when the scale of the map is decreasing.
-These statistics can be good benchmarks for (continuous) map generalization.
-
-
-
+These statistics can be good indications 
+for (continuous) map generalization.
 \citet{Huang2016Webmap} pointed out that
 the effort of implementing online maps 
 had been spent mainly on preparing data on the server side.
@@ -295,16 +308,7 @@ should be kept according to that given scale.
 
 
 
-\citet{Meijers2020Web} explained the principles of 
-implementing a web map of land-cover parcels.
-First, they generated an SSC, 
-where a parcel on map becomes a polyhedron in the SSC.
-Second, they showed how to slice the SSC 
-to output a web map at a given scale.
-The slicing is based on the GPU at the client side.
-Third, they made chunks of the SSC 
-so that they were able to send only the data of the place
-where a map user was reading.
+
 
 
 %\citet{Thiemann2018LandCover}
@@ -317,19 +321,20 @@ where a map user was reading.
 \label{sec:methodology}
 
 
-We define an \emph{event} as merging a small parcel into a neighbor.
+We define an \emph{event} as a single generalization operation, 
+such as merging a small parcel into a neighbor.
 For example, \fig\ref{fig:event_and_step}b is obtained from 
 \fig\ref{fig:event_and_step}a by processing one merging event,
 where the dashed polygon marks the new parcel from the merging.
 Similarly, \fig\ref{fig:event_and_step}c is obtained from 
 \fig\ref{fig:event_and_step}a by processing two merging events.
 We define a \emph{step} as 
-a set of merging events happening at the same time.
-For example, \fig\ref{fig:event_and_step}b is obtained from 
-\fig\ref{fig:event_and_step}a by processing one merging step,
-which consists of one merging event.
-\fig\ref{fig:event_and_step}c by processing another merging step,
-which consists of two merging event.
+a set of events happening at the same time.
+For example, 
+\fig\ref{fig:event_and_step}b is obtained from 
+\fig\ref{fig:event_and_step}a by processing merging step with one event.
+\fig\ref{fig:event_and_step}d is obtained from 
+\fig\ref{fig:event_and_step}c by processing merging step with two events.
 In our method, a merging step is completely processed 
 before the next step takes place (all sequential). 
 
@@ -361,20 +366,23 @@ we block the neighbors of the selected parcels of merging events in a step
 (see \fig\ref{fig:blocked_polygons}).
 First, the adjacent parcels are blocked.
 Second, the neighbors
-of the adjacent polygons are blocked (see \fig\ref{fig:blocked_polygons}a).
+of the adjacent parcels are blocked (see \fig\ref{fig:blocked_polygons}a).
 When searching for another merging event for the step, 
-we select the smallest parcel and its most compatible neighbor
-from the free parcels (see \fig\ref{fig:blocked_polygons}b).
+we select the least important parcel and its most compatible neighbor
+from the free parcels (see \fig\ref{fig:blocked_polygons}b);
+if the most compatible neighbor is not free,
+we block the the least important parcel 
+and move to the next least important parcel.
 
 \begin{figure}[tb]
 \centering
 \includegraphics[]{blocked_polygons}
 \caption{(a) From all the free parcels,
-a smallest one (marked by the small circle) is selected to merge into
+a least important one (marked by the small circle) is selected to merge into
 its most compatible neighbor (marked by the larger circle).
 Then the surrounding parcels are blocked (marked by the crosses).
 (b) In order to find parallel merging events, 
-a smallest parcel from the remaining free parcels
+a least important parcel from the remaining free parcels
 is selected to merge with the most compatible neighbor,
 and the surrounding parcels are blocked.
 }
@@ -388,16 +396,16 @@ and the surrounding parcels are blocked.
 
 
 We use a greedy algorithm to find the merging events of each step.
-The algorithm selects the smallest parcel and merge it with
+The algorithm selects the least important parcel and merge it with
 the most compatible neighbor (that shares boundary).
 There are many ways of defining the most compatible neighbor.
 For example, \citet{Cheng2006} proposed three ways, i.e.,
 the neighbor has the largest size, 
-shares longest boundary with the smallest parcel,
-or is closest to the smallest parcel in land-cover type. 
+shares longest boundary with the least important parcel,
+or is closest to the least important parcel in land-cover type. 
 \citet{Peng2017AStar} proposed that 
 the neighbor should have a close land-cover type
-to the smallest parcel
+to the least important parcel
 and the combination of the two parcels should be compact;
 they defined the type distance based on a binary tree
 according to the code of each land-cover type.
@@ -410,12 +418,13 @@ From the unblocked parcels, the algorithm finds another pair of parcels
 for another merging event
 (see \fig\ref{fig:blocked_polygons}b).
 This finding process is iterated 
-until the (users-specified) maximum number of merging events, 
-$N_\mathrm{parallel}$, is reached or 
-there is no available pair of parcels for merging event anymore.
-Up to this point, finding merging events for a step is finished.
+until a certain number of merging events have been found 
+(e.g., 0.1\% of the number of parcels at the given stage), 
+or there is no available pair of parcels for merging event anymore.
+Up to this point, finding merging events for a step is finished,
+and the parcels are merged in parallel.
 Then the blocked parcels are released, 
-and the finding for the next step starts.
+and the finding of candidates for the next step starts.
 
 
 
@@ -542,7 +551,7 @@ face\_id &   step\_low   & step\_high    \\ \hline
 
 In order to provide smooth zooming of merging
 so that map users easily understand the changes,
-we merge by expanding a parcel over another parcel
+we merge by gradually expanding a parcel over another parcel
 (see \fig\ref{fig:smooth_merging}).
 This expansion is based on slicing the space-scale cube shown in
 \fig\ref{fig:smooth_merging_two_rectangles}.
@@ -600,9 +609,11 @@ the common boundary exists only in \fig\ref{fig:smooth_merging}a but not in
 \subsection{Snapping to Certain Steps}
 \label{sec:snap}
 
-For a zooming action, 
+For a zooming action
+(that is, slicing the SSC with a horizontal plane), 
 we always snap the map to a certain step
-so that users will not see a merging operation stops half-way.
+so that users will not see a merging operation stops half-way
+and will not see transition artifact (such as slivers or blended colors).
 In order to do that, we store the information of
 merging events and merging steps into 
 a JSON file (JavaScript Object Notation File).
@@ -669,8 +680,10 @@ accessed: Jan 14, 2020.}.
 The OBJ file will be sent to the client 
 when a user visits our website to access the map.
 On the client side,
-the content of the OBJ file is processed and submitted to GPU to display,
-which was implemented in JavaScript.
+the content of the OBJ file is processed
+by a prototype implemented in JavaScript.
+The processed content and some code for WebGL (Web Graphics Library)
+are submitted to GPU to display the map of smooth zoom.
 
 The dataset used in this case study is a subset of TOP10NL\footnote{%
 More information about TOP10NL can be found at
@@ -699,7 +712,7 @@ At that moment, all the parcels are merged into one single parcel
 \centering
 \includegraphics[page=1]{data}
 \caption{The dataset represents the place 
-    to the southeast of Maastricht, The Netherlands.}
+    to the southeast of Maastricht, Limburg, The Netherlands.}
 \label{fig:data}
 \end{figure}
 
@@ -725,13 +738,13 @@ which can be computed by summing up the second values of all the pairs.
 
 
 The number of times that we compromised.
-Because some polygons are blocked during finding merging events, 
-the smallest polygon selected for an merging event 
-is not the real smallest polygon 
-among all the polygons at that step. 
+Because some parcels are blocked during finding merging events, 
+the least important parcel selected for an merging event 
+is not the real least important parcel 
+among all the parcels at that step. 
 This situation happens $XXX$ times in our data.
 For the same reason, 
-we cannot always use the most compatible adjacent polygon,
+we cannot always use the most compatible adjacent parcel,
 which happens $XXX$ times.
 
 
@@ -749,8 +762,9 @@ Then, we integrated the parallel events into the SSC.
 On the client side, web maps are generated by slicing the SSC
 based on the method of \citet{Meijers2020Web}.
 To avoid half-way merging, we require the merging animation 
-to stop at certain steps.
-Our case study shows the effectiveness of our approach.
+to stop at complete steps (which contain parallel events).
+Our case study shows that 
+our approach provides with more smooth transition for zooming.
 
 
 \subsection{Future Work}
@@ -761,9 +775,10 @@ merging sequences for land-cover parcels.
 For those given merging sequence,
 it is interesting to parallel some of the merging events.
 
-Integrate split operation into our method.
+Integrate split operation into our method. also line simplification
 
-evenly distribute the merging events for each step
+evenly distribute the merging events for each step, 
+network simplification
 
 When we remove a triangle by slicing the SSC, 
 we may want to keep three vertices of the triangle 
