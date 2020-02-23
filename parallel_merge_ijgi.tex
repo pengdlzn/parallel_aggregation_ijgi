@@ -548,6 +548,7 @@ face\_id &   step\_low   & step\_high    \\ \hline
 
 
 \subsection{Smooth Merging}
+\label{sec:smooth_merging}
 
 In order to provide smooth zooming of merging
 so that map users easily understand the changes,
@@ -720,7 +721,7 @@ At that moment, all the parcels are merged into one single parcel
 Parameter~$N_\mathrm{parallel}$, 
 the maximum number of parallel events mentioned in \sect\ref{sec:greedy_algo},
 was set to~$200$.
-The content in the JSON file (see \sect\ref{sec:snap}) is 
+The content of the JSON file (see \sect\ref{sec:snap}) is 
 \makeatletter
 \def\verbatim@font{\normalfont\rmfamily}
 \makeatother
@@ -769,32 +770,29 @@ our approach provides with more smooth transition for zooming.
 
 \subsection{Future Work}
 
-This paper used a greedy algorithm to find parallel merging events
-for each step.
-Alternatively, it is also possible to find a sequence of merging steps,
-where each step consists only one merging event, by some existing methods
-(e.g., the greedy algorithm of \citet{vanOosterom2005}
-or the \Astar algorithm of \citet[\chap2]{Peng2019Thesis}).
-Then, we can reorganize some of the single-event merging steps 
-to form some parallel-event merging steps.
+
 
 Our current event consists of only the merging operation,
 it is also necessary to involve split operation
 because sometimes a merging operation results in an unnatural parcel.
 For example, it is weird to merge a long and thin parcel 
 with one of the parcels that are along it
-\citep[see][]{Haunert2004Skeleton}.
+\citep[see][]{Haunert2008Skeleton}.
 Therefore, such kind of long and thin parcels should be
 split into several parts first.
 We may integrate a split method based on the straight skeleton
-\citep{Haunert2004Skeleton}
+\citep{Haunert2008Skeleton}
 or the skeleton based on constrained Delaunay triangulation
 \citep{Meijers2016Split}.
 
 To avoid clutter of vertices for zooming out, 
-we also need to simplify the boundaries of the parcels,
-which can be realized by using the method of 
-\citet{Meijers2011LineSimp}.
+we also need to simplify the boundaries of the parcels.
+\citet{Meijers2011LineSimp} proposed a method 
+to simplify the boundaries parallelly. 
+Moreover, their results are topologically safe . 
+Another choice would be the method of \citet{ImaiIri1988},
+which is able to minimize the number of vertices 
+for a given error threshold.
 
 evenly distribute the merging events for each step, 
 network simplification
@@ -806,12 +804,11 @@ In this case, the polyhedron (with five faces) should have curly edges,
 which is also known as a \emph{curved polyhedron}.
 The slopes of curly edges need to be studied.
 
-This paper develops technique for smooth zooming based on parallel merging,
-and we hope that it allows map users to follow the zooming more easily.
-A future work is to investigate 
-how much map users benefit from our technique.
-We will conduct some usability tests based on the experience of
-\citet[\sect6.7]{Suba2017Thesis} and \citet{Midtbo2007}.
+\sect\ref{sec:smooth_merging} shows our current solution of
+gradually expanding a parcel over the other parcel.
+In order to make the expansion even more smooth,
+we would like to implement the way 
+shown in \fig\ref{fig:smooth_merging_future}.
 
 \begin{figure}[tb]
 \centering
@@ -824,7 +821,21 @@ We will conduct some usability tests based on the experience of
 \label{fig:smooth_merging_future}
 \end{figure}
 
+This paper used a greedy algorithm to find parallel merging events
+for each step.
+Alternatively, it is also possible to find a sequence of merging steps,
+where each step consists only one merging event, by some existing methods
+(e.g., the greedy algorithm of \citet{vanOosterom2005}
+or the \Astar algorithm of \citet[\chap2]{Peng2019Thesis}).
+Then, we can reorganize some of the single-event merging steps 
+to form some parallel-event merging steps.
 
+This paper develops technique for smooth zooming based on parallel merging,
+and we hope that it allows map users to follow the zooming more easily.
+A future work is to investigate 
+how much map users benefit from our technique.
+We will conduct some usability tests based on the experience of
+\citet[\sect6.7]{Suba2017Thesis} and \citet{Midtbo2007}.
 
 
 %Some research questions are as follows.
