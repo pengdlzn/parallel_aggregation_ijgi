@@ -769,13 +769,32 @@ our approach provides with more smooth transition for zooming.
 
 \subsection{Future Work}
 
-\citet{vanOosterom2005} and \citet[\chap2]{Peng2019Thesis}
-respectively developed a greedy algorithm and an \Astar algorithm to find
-merging sequences for land-cover parcels.
-For those given merging sequence,
-it is interesting to parallel some of the merging events.
+This paper used a greedy algorithm to find parallel merging events
+for each step.
+Alternatively, it is also possible to find a sequence of merging steps,
+where each step consists only one merging event, by some existing methods
+(e.g., the greedy algorithm of \citet{vanOosterom2005}
+or the \Astar algorithm of \citet[\chap2]{Peng2019Thesis}).
+Then, we can reorganize some of the single-event merging steps 
+to form some parallel-event merging steps.
 
-Integrate split operation into our method. also line simplification
+Our current event consists of only the merging operation,
+it is also necessary to involve split operation
+because sometimes a merging operation results in an unnatural parcel.
+For example, it is weird to merge a long and thin parcel 
+with one of the parcels that are along it
+\citep[see][]{Haunert2004Skeleton}.
+Therefore, such kind of long and thin parcels should be
+split into several parts first.
+We may integrate a split method based on the straight skeleton
+\citep{Haunert2004Skeleton}
+or the skeleton based on constrained Delaunay triangulation
+\citep{Meijers2016Split}.
+
+To avoid clutter of vertices for zooming out, 
+we also need to simplify the boundaries of the parcels,
+which can be realized by using the method of 
+\citet{Meijers2011LineSimp}.
 
 evenly distribute the merging events for each step, 
 network simplification
@@ -785,12 +804,12 @@ we may want to keep three vertices of the triangle
 instead of making four vertices.
 In this case, the polyhedron (with five faces) should have curly edges,
 which is also known as a \emph{curved polyhedron}.
-$\cos, \sin$.
+The slopes of curly edges need to be studied.
 
 This paper develops technique for smooth zooming based on parallel merging,
 and we hope that it allows map users to follow the zooming more easily.
-Whether or not it is true and how much is the improvement 
-are still need to be investigated.
+A future work is to investigate 
+how much map users benefit from our technique.
 We will conduct some usability tests based on the experience of
 \citet[\sect6.7]{Suba2017Thesis} and \citet{Midtbo2007}.
 
