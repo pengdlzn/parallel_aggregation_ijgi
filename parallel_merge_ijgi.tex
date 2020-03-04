@@ -252,6 +252,11 @@ To provide better visualization, they suggested that
 the merging operations should be paralleled.
 Then, one question is how many operations 
 should be paralleled for a given scale.
+\citet{Thiemann2018LandCover} proposed a chain of operators 
+to generalize a land-cover map.
+In the chain of processing land-cover polygons, 
+they integrated cleaning, dissolving, splitting, aggregating, reclassifying, and simplifying. 
+
 
 \citet{Meijers2020Web} explained the principles of 
 implementing a web map of land-cover parcels.
@@ -319,6 +324,10 @@ should be kept according to that given scale.
 
 \section{Methodology}
 \label{sec:methodology}
+
+%UML?
+%Flowchart of the framework?
+
 
 
 We define an \emph{event} as a single generalization operation, 
@@ -419,7 +428,7 @@ for another merging event
 (see \fig\ref{fig:blocked_polygons}b).
 This finding process is iterated 
 until a certain number of merging events have been found 
-(e.g., 0.1\% of the number of parcels at the given stage), 
+(e.g., 5\% of the number of parcels at the given stage), 
 or there is no available pair of parcels for merging event anymore.
 Up to this point, finding merging events for a step is finished,
 and the parcels are merged in parallel.
@@ -784,6 +793,11 @@ We may integrate a split method based on the straight skeleton
 \citep{Haunert2008Skeleton}
 or the skeleton based on constrained Delaunay triangulation
 \citep{Meijers2016Split}.
+In order to apply appropriate generalization operators
+for a certain scale,
+we also need to extend and implement the framework 
+to guide our generalization choices
+\citep{Meijers2018Framework}.
 
 To avoid clutter of vertices for zooming out, 
 we also need to simplify the boundaries of the parcels.
@@ -793,6 +807,15 @@ Moreover, their results are topologically safe .
 Another choice would be the method of \citet{ImaiIri1988},
 which is able to minimize the number of vertices 
 for a given error threshold.
+One more choice would be to construct compatible triangulations 
+\citep[see][\chap3]{Peng2019Thesis}
+for the two levels of land-cover maps.
+In the SSC, we could build some tilted walls 
+to connect the two levels of compatible triangulations.
+When we slice this SSC to animate a zooming action,
+the boundaries of the parcels are morphed 
+between a detailed representation and a coarse representation.
+We can imagine that it is challenging to build the tilted walls.
 
 evenly distribute the merging events for each step, 
 network simplification
@@ -821,8 +844,8 @@ shown in \fig\ref{fig:smooth_merging_future}.
 \label{fig:smooth_merging_future}
 \end{figure}
 
-This paper used a greedy algorithm to find parallel merging events
-for each step.
+This paper used a greedy algorithm 
+to find parallel merging events for each step.
 Alternatively, it is also possible to find a sequence of merging steps,
 where each step consists only one merging event, by some existing methods
 (e.g., the greedy algorithm of \citet{vanOosterom2005}
