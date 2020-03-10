@@ -394,28 +394,26 @@ A merging step consists of one or more merging events.}
 
 
 We require that 
-all the pairs of areas involved in the merging events of a step 
-do not have any common neighbors, 
+the land-cover areas involved in different merging events of a step 
+must not be neighbors, 
 which makes the merging events independent from each other.
 There are two benefits of this independency.
 First, it is easy to maintain the topology of the map.
 When a pair of areas have been merged, 
-we must update the adjacent areas in order to maintain the topology.
+we must update the common boundaries with the adjacent areas.
 If an adjacent area is involved in another merging event,
-then it will be complicated to update the area for the two merging events.
+then it will be complicated to update the common boundaries 
+for the two merging events.
 Second, users can more easily understand the events 
 than merging several areas into a single one,
 where the latter is a traditional way of merging.
 In order to realize the requirement, 
 we block the neighbors of the selected areas of merging events in a step
 (see \fig\ref{fig:blocked_polygons}).
-First, the adjacent areas are blocked.
-Second, the neighbors
-of the adjacent areas are blocked (see \fig\ref{fig:blocked_polygons}a).
 When searching for another merging event for the step, 
 we select the least important area and its most compatible neighbor
-from the free areas (see \fig\ref{fig:blocked_polygons}b);
-if the most compatible neighbor is not free,
+(see \fig\ref{fig:blocked_polygons}b);
+if the most compatible neighbor is blocked because of found merging events,
 we block the the least important area 
 and move to the next least important area.
 
@@ -708,19 +706,16 @@ will be compressed to $[[1,3], [0,2]]$,
 where each pair of values in the inner square brackets 
 represent the event number and the repeat times.
 The content of the JSON file is as following.
-\makeatletter
-\def\verbatim@font{\normalfont\rmfamily}
-\makeatother
 \begin{verbatim}
                 {
-                    "parallel_param": 0.3,
                     "face_num": 7,
+                    "parallel_param": 0.3,                    
                     "eventdiff_repetition": [[1, 3], [0, 2]]
                 }
 \end{verbatim}
 If we would have a list of $n_\mathrm{diff}$ values~$[0, 0, 0, 0, 0, 0, 5, 0, 0]$,
 then the compressed content will be~$[[0,6], [5,1], [0,2]]$.
-Our case study will show that this way of compressing is very efficient
+Our case study will show that this way of compressing is efficient
 (see \sect\ref{sec:case_study}).
 
 
@@ -860,25 +855,64 @@ At that moment, all the areas are merged into one single area
 \label{fig:data}
 \end{figure}
 
-
-Parameter~$N_\mathrm{parallel}$, 
-the maximum number of parallel events mentioned in \sect\ref{sec:greedy_algo},
-was set to~$200$.
-The content of the JSON file (see \sect\ref{sec:snap}) is 
-\makeatletter
-\def\verbatim@font{\normalfont\rmfamily}
-\makeatother
+At each step, we want to parallelly merge some per cents of the areas.
+We tried three cases: 0.1\%, 1\%, and 10\%.
+That is, parameter~$r_\mathrm{parallel}=0.001, 0.01, \text{and} 0.1$. 
+(see \sect\ref{sec:greedy_algo}).
+The content of the JSON file for parallel parameter~$r_\mathrm{parallel}=0.01$ 
+(see \sect\ref{sec:snap}) is 
 \begin{verbatim}
-{"eventnum_repetition": [[200, 46], [191, 1], [183, 1], [178, 1], [167, 1], [165, 1], [146, 1], [145, 1], [136, 1], 
-[135, 1], [127, 1], [124, 1], [108, 1], [103, 1], [107, 1], [96, 1], [95, 1], [87, 1], [82, 1], [81, 1], [82, 1],  [78, 1], 
-[75, 1], [69, 1], [66, 1], [61, 1], [56, 1], [57, 1], [54, 1], [48, 1], [47, 1], [49, 1], [44, 1], [45, 1], [42, 1], [37, 1], [41, 1], 
-[34, 1], [36, 1], [29, 1], [28, 1], [27, 1], [24, 1], [25, 1], [20, 2], [22, 1], [21, 1], [19, 3], [15, 1], [13, 1], [12, 1], [13, 1], 
-[12, 1], [11, 1], [9, 1], [12, 3], [9, 1], [10, 2], [9, 1], [7, 1], [6, 1], [7, 2], [5, 2], [6, 4], [5, 3], [4, 2], [3, 7], [2, 4], [1, 2], 
-[2, 1], [1, 11]]}.
+                {
+                    "face_num": 13238,
+                    "parallel_param": 0.01,                    
+                    "eventdiff_repetition": [[0, 544]]
+                }
 \end{verbatim}
-There are~$150$ steps in total, 
-which can be computed by summing up the second values of all the pairs.
+There are~$544$ steps in total, 
+which can be computed by summing up the second values of all the pairs
+(there is only one pair in the case study).
+The "eventdiff\_repetition" contents of other parallel parameters 
+can be found in \tbl\ref{tab:parallel_param_comparison}.
 
+
+\begin{table}[tb]
+\label{tab:parallel_param_comparison}
+\centering
+\caption{pass}
+\begin{tabular}{rrrr}
+\hline
+$r_\mathrm{parallel}$   & eventdiff\_repetition         & least face blocked    & best neighbor blocked     \\ \hline
+0.001                   & [[0, 3195]]                   &       228             &       72                  \\
+0.01                    & [[0, 544]]                    &   3{,}216             &  1{,}841                  \\
+0.1                     & $L_{\mathrm{diff\_rep}, 0.1}$ & 105{,}980             & 38{,}232                  \\ \hline 
+\end{tabular}
+%\begin{tabular}{cccc}
+%\hline
+%$r_\mathrm{parallel}$ & 0.001       & 0.01          & 0.1    \\ \hline
+%eventdiff\_repetition & [[0, 3195]] & [[0, 544]]    & $L_{\mathrm{diff\_rep}, 0.1}$   \\
+%least face blocked    & 228            & 3{,}216         & 105{,}980       \\
+%best neighbor blocked & 72            & 1{,}841        & 38{,}232 \\ \hline 
+%\end{tabular}
+%\begin{Verbatim}[fontfamily=normal,commandchars=\\\{\},
+%codes={\catcode`$=3\catcode`^=7\catcode`_=8}]
+%$L_{\mathrm{diff\_rep}, 0.1}$ = [[51, 1], [138, 1], [152, 1], [200, 1], [205, 1], [181, 1], [198, 1], [167, 1], [173, 1], [165, 1], 
+%[153, 1], [143, 1], [140, 1], [127, 1], [125, 1], [108, 1], [103, 1], [92, 2], [84, 1], [79, 1], [74, 1], [68, 1], 
+%[60, 1], [54, 1], [46, 1], [50, 1], [48, 1], [45, 1], [39, 1], [44, 1], [37, 1], [36, 1], [32, 1], [30, 1], [26, 1], 
+%[28, 1], [21, 2], [18, 1], [20, 1], [16, 1], [12, 1], [13, 1], [8, 1], [12, 2], [6, 1], [12, 1], [11, 1], [8, 1], [7, 1], 
+%[6, 1], [7, 1], [4, 1], [5, 1], [4, 1], [5, 2], [7, 1], [5, 1], [4, 1], [5, 1], [3, 1], [4, 1], [3, 3], [2, 2], [1, 2], [2, 1], 
+%[1, 2], [2, 1], [1, 3], [0, 2], [1, 2], [0, 14]]
+%\end{Verbatim}
+%\fvset{gobble=2}
+%\begin{Verbatim}[fontfamily=normal,frame=single,
+%label=$L_{\mathrm{diff\_rep}, 0.1}$]
+%   [[51, 1], [138, 1], [152, 1], [200, 1], [205, 1], [181, 1], [198, 1], [167, 1], [173, 1], [165, 1], 
+%    [153, 1], [143, 1], [140, 1], [127, 1], [125, 1], [108, 1], [103, 1], [92, 2], [84, 1], [79, 1], [74, 1], [68, 1], 
+%    [60, 1], [54, 1], [46, 1], [50, 1], [48, 1], [45, 1], [39, 1], [44, 1], [37, 1], [36, 1], [32, 1], [30, 1], [26, 1], 
+%    [28, 1], [21, 2], [18, 1], [20, 1], [16, 1], [12, 1], [13, 1], [8, 1], [12, 2], [6, 1], [12, 1], [11, 1], [8, 1], [7, 1], 
+%    [6, 1], [7, 1], [4, 1], [5, 1], [4, 1], [5, 2], [7, 1], [5, 1], [4, 1], [5, 1], [3, 1], [4, 1], [3, 3], [2, 2], [1, 2], [2, 1], 
+%    [1, 2], [2, 1], [1, 3], [0, 2], [1, 2], [0, 14]]
+%\end{Verbatim}
+\end{table}
 
 
 The number of times that we compromised.
