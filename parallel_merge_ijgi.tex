@@ -126,22 +126,6 @@ maintaining map consistency over scale change.
 \section{Introduction}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 When map users are reading digital maps,
 they expect different levels of detail (LoDs) depending on scale.
 For example, they may want to see individual buildings when zooming in
@@ -497,18 +481,18 @@ to record the face information of a tGAP.
 The table contains columns \emph{face\_id}, 
 \emph{imp\_low}, \emph{imp\_high}, \emph{imp\_own},
 \emph{feature\_class\_id}, \emph{area}, and \emph{bbox}.
-We add columns \emph{step\_low} and \emph{step\_high} into the table, 
-which make it easy to see when a face should appear or disappear 
+We add columns \emph{step\_low} and \emph{step\_high} into the table 
+so that it is easy to see when a face should appear or disappear 
 (see \tbls\ref{tab:face_tgap} and~\ref{tab:face_tgap_parallel},
 where some columns are hidden).
 That is, when the merging step arrives at the step\_low of a face,
-then the face should appear;
+the face should appear;
 when the merging step arrives at the step\_high of a face,
-then the face should disappear;
+the face should disappear;
 
-When switching from merging one pair at each step 
+When switching from single-event merging 
 (sequence~I of \fig\ref{fig:face_tgap})
-to merging parallelly (sequence~II of \fig\ref{fig:face_tgap}),
+to parallel merging (sequence~II of \fig\ref{fig:face_tgap}),
 we see that the step\_high values of faces~1 and~2 change from~1 to~2
 (see \tbl\ref{tab:face_tgap_parallel}, the new values are in bold).
 We also see that the step\_low value of faces~7 changes from~1 to~2
@@ -548,10 +532,10 @@ according to the records of \tbl\ref{tab:face_tgap_parallel}.
 %
 %
 %
+\captionsetup*{type=table} %*: suppress warning "The caption type was already set to figure"
 \parbox{.49\linewidth}{
-\captionof{table}{Face table of merging sequence~I 
-    of \fig\ref{fig:face_tgap}.
-}
+\caption{Face table of merging sequence~I 
+    of \fig\ref{fig:face_tgap}}
 \label{tab:face_tgap}
 \centering
 \begin{tabular}{ccc}
@@ -570,7 +554,10 @@ face\_id &   step\_low   & step\_high    \\ \hline
 %
 %
 \parbox{.49\linewidth}{
-\captionof{table}{Face table of merging sequence~II 
+%\captionof{table}{Face table of merging sequence~II 
+%    of \fig\ref{fig:face_tgap}.
+%}
+\caption{Face table of merging sequence~II 
     of \fig\ref{fig:face_tgap}.
 }
 \label{tab:face_tgap_parallel}
@@ -730,7 +717,8 @@ Our case study will show that this way of compressing is efficient
 %
 %
 %
-\captionof{table}{.
+\captionsetup*{type=table} %*: suppress warning "The caption type was already set to figure"
+\caption{.
 }
 \label{tab:sequence_snap}
 \centering
@@ -845,7 +833,13 @@ the scale denominator will arrive at~$1{,}150{,}565$
 according to \eq\ref{eq:S_t_snap}.
 At that moment, all the areas are merged into one single area
 (see \figs\ref{fig:data}b).
-
+At each step, we want to parallelly merge some per cents of the areas.
+We tried three cases\footnote{%
+The three cases of maps can be browsed at
+\url{http://}}: 
+0.1\%, 1\%, and 10\%.
+That is, parameter~$r_\mathrm{parallel}=0.001, 0.01, \text{and~} 0.1$ 
+(see \sect\ref{sec:greedy_algo}).
 
 \begin{figure}[tb]
 \centering
@@ -855,12 +849,9 @@ At that moment, all the areas are merged into one single area
 \label{fig:data}
 \end{figure}
 
-At each step, we want to parallelly merge some per cents of the areas.
-We tried three cases: 0.1\%, 1\%, and 10\%.
-That is, parameter~$r_\mathrm{parallel}=0.001, 0.01, \text{and} 0.1$. 
-(see \sect\ref{sec:greedy_algo}).
-The content of the JSON file for parallel parameter~$r_\mathrm{parallel}=0.01$ 
-(see \sect\ref{sec:snap}) is 
+In this paragraph, we show some results for the case of 
+parallel parameter~$r_\mathrm{parallel}= 0.01$.
+The content of the JSON file is 
 \begin{verbatim}
                 {
                     "face_num": 13238,
@@ -871,17 +862,30 @@ The content of the JSON file for parallel parameter~$r_\mathrm{parallel}=0.01$
 There are~$544$ steps in total, 
 which can be computed by summing up the second values of all the pairs
 (there is only one pair in the case study).
-The "eventdiff\_repetition" contents of other parallel parameters 
+%
+As explained in \sect\ref{sec:methodology}, 
+for each merging step we iteratively select the least important area 
+and its most compatible neighbor to form a merging event; 
+then, we block the neighbors of the two areas.
+Sometimes, a least important area is already blocked 
+because of the previously found events.
+This situation happens~$3{,}216$ times in total for all the steps
+in our case study.
+%
+Sometimes, although a least important area is free, 
+its most compatible neighbor has been blocked 
+because of the previously found events.
+This case happens~$1{,}841$ times in total for all the steps.
+%
+More results of other parallel parameters 
 can be found in \tbl\ref{tab:parallel_param_comparison}.
 
-
 \begin{table}[tb]
-\label{tab:parallel_param_comparison}
 \centering
 \caption{pass}
 \begin{tabular}{rrrr}
 \hline
-$r_\mathrm{parallel}$   & eventdiff\_repetition         & least face blocked    & best neighbor blocked     \\ \hline
+$r_\mathrm{parallel}$   & $L_\mathrm{diff\_rep}$        & $n_\mathrm{blocked}$  & $n_\mathrm{nbr\_blocked}$ \\ \hline
 0.001                   & [[0, 3195]]                   &       228             &       72                  \\
 0.01                    & [[0, 544]]                    &   3{,}216             &  1{,}841                  \\
 0.1                     & $L_{\mathrm{diff\_rep}, 0.1}$ & 105{,}980             & 38{,}232                  \\ \hline 
@@ -893,15 +897,15 @@ $r_\mathrm{parallel}$   & eventdiff\_repetition         & least face blocked    
 %least face blocked    & 228            & 3{,}216         & 105{,}980       \\
 %best neighbor blocked & 72            & 1{,}841        & 38{,}232 \\ \hline 
 %\end{tabular}
-%\begin{Verbatim}[fontfamily=normal,commandchars=\\\{\},
-%codes={\catcode`$=3\catcode`^=7\catcode`_=8}]
-%$L_{\mathrm{diff\_rep}, 0.1}$ = [[51, 1], [138, 1], [152, 1], [200, 1], [205, 1], [181, 1], [198, 1], [167, 1], [173, 1], [165, 1], 
-%[153, 1], [143, 1], [140, 1], [127, 1], [125, 1], [108, 1], [103, 1], [92, 2], [84, 1], [79, 1], [74, 1], [68, 1], 
-%[60, 1], [54, 1], [46, 1], [50, 1], [48, 1], [45, 1], [39, 1], [44, 1], [37, 1], [36, 1], [32, 1], [30, 1], [26, 1], 
-%[28, 1], [21, 2], [18, 1], [20, 1], [16, 1], [12, 1], [13, 1], [8, 1], [12, 2], [6, 1], [12, 1], [11, 1], [8, 1], [7, 1], 
-%[6, 1], [7, 1], [4, 1], [5, 1], [4, 1], [5, 2], [7, 1], [5, 1], [4, 1], [5, 1], [3, 1], [4, 1], [3, 3], [2, 2], [1, 2], [2, 1], 
-%[1, 2], [2, 1], [1, 3], [0, 2], [1, 2], [0, 14]]
-%\end{Verbatim}
+\begin{Verbatim}[fontfamily=normal,commandchars=\\\{\},
+codes={\catcode`$=3\catcode`^=7\catcode`_=8}]
+$L_{\mathrm{diff\_rep},0.1}$ = [[51, 1], [138, 1], [152, 1], [200, 1], [205, 1], [181, 1], [198, 1], [167, 1], [173, 1], [165, 1], 
+[153, 1], [143, 1], [140, 1], [127, 1], [125, 1], [108, 1], [103, 1], [92, 2], [84, 1], [79, 1], [74, 1], [68, 1], 
+[60, 1], [54, 1], [46, 1], [50, 1], [48, 1], [45, 1], [39, 1], [44, 1], [37, 1], [36, 1], [32, 1], [30, 1], [26, 1], 
+[28, 1], [21, 2], [18, 1], [20, 1], [16, 1], [12, 1], [13, 1], [8, 1], [12, 2], [6, 1], [12, 1], [11, 1], [8, 1], [7, 1], 
+[6, 1], [7, 1], [4, 1], [5, 1], [4, 1], [5, 2], [7, 1], [5, 1], [4, 1], [5, 1], [3, 1], [4, 1], [3, 3], [2, 2], [1, 2], [2, 1], 
+[1, 2], [2, 1], [1, 3], [0, 2], [1, 2], [0, 14]]
+\end{Verbatim}
 %\fvset{gobble=2}
 %\begin{Verbatim}[fontfamily=normal,frame=single,
 %label=$L_{\mathrm{diff\_rep}, 0.1}$]
@@ -912,18 +916,11 @@ $r_\mathrm{parallel}$   & eventdiff\_repetition         & least face blocked    
 %    [6, 1], [7, 1], [4, 1], [5, 1], [4, 1], [5, 2], [7, 1], [5, 1], [4, 1], [5, 1], [3, 1], [4, 1], [3, 3], [2, 2], [1, 2], [2, 1], 
 %    [1, 2], [2, 1], [1, 3], [0, 2], [1, 2], [0, 14]]
 %\end{Verbatim}
+\label{tab:parallel_param_comparison}
 \end{table}
 
 
-The number of times that we compromised.
-Because some areas are blocked during finding merging events, 
-the least important area selected for an merging event 
-is not the real least important area 
-among all the areas at that step. 
-This situation happens $XXX$ times in our data.
-For the same reason, 
-we cannot always use the most compatible adjacent area,
-which happens $XXX$ times.
+
 
 
 
@@ -1027,6 +1024,48 @@ A future work is to investigate
 how much map users benefit from our technique.
 We will conduct some usability tests based on the experience of
 \citet[\sect6.7]{Suba2017Thesis} and \citet{Midtbo2007}.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 %Some research questions are as follows.
