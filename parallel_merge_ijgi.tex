@@ -182,7 +182,7 @@ which is difficult for map users to understand.
 To provide small changes, 
 \citet{vanOosterom2005} proposed 
 the topological Generalized Area Partitioning (tGAP) tree,
-where at each step a single area is merged into
+where in each step a single area is merged into
 its most compatible neighbor 
 (see \fig\ref{fig:intro}c--g).
 Further, a space-scale cube (SSC) can be built so that 
@@ -300,7 +300,7 @@ while the other two methods have limitation
 in terms of the type of a polygon.
 For example, the two other methods do not work for some concave polygons.
 \citet{Suba2016Road} continuously generalized a planar map of road network.
-At each step, they process the least-important face.
+In each step, they process the least-important face.
 Taking into account the condition of the face,
 they put it back with higher importance, collapse it, 
 or merge it into an adjacent face.
@@ -447,7 +447,7 @@ for another merging event
 (see \fig\ref{fig:blocked_polygons}b).
 This finding process is iterated 
 until a certain number of merging events have been found 
-(e.g., $r_\mathrm{parallel} = 0.1\%$ of the number of areas at the given stage), 
+(e.g., $r_\mathrm{parallel} = 1\%$ of the number of areas at the given stage), 
 or there is no available pair of areas for merging event anymore.
 Up to this point, finding merging events for a step is finished,
 and the areas are merged in parallel.
@@ -481,51 +481,91 @@ to record the face information of a tGAP.
 The table contains columns \emph{face\_id}, 
 \emph{imp\_low}, \emph{imp\_high}, \emph{imp\_own},
 \emph{feature\_class\_id}, \emph{area}, and \emph{bbox}.
-We add columns \emph{step\_low} and \emph{step\_high} into the table 
+We add columns \emph{state\_low} and \emph{state\_high} into the table 
 so that it is easy to see when a face should appear or disappear 
 (see \tbls\ref{tab:face_tgap} and~\ref{tab:face_tgap_parallel},
 where some columns are hidden).
-That is, when the merging step arrives at the step\_low of a face,
+That is, when the merging arrives at the state\_low of a face,
 the face should appear;
-when the merging step arrives at the step\_high of a face,
-the face should disappear;
-
+when the merging arrives at the state\_high of a face,
+the face should disappear.
 When switching from single-event merging 
 (sequence~I of \fig\ref{fig:face_tgap})
 to parallel merging (sequence~II of \fig\ref{fig:face_tgap}),
-we see that the step\_high values of faces~1 and~2 change from~1 to~2
+we observe that the state\_high values of faces~1 and~2 are changed from~1 to~2
 (see \tbl\ref{tab:face_tgap_parallel}, the new values are in bold).
-We also see that the step\_low value of faces~7 changes from~1 to~2
+Also, the state\_low value of faces~6 is changed from~1 to~2
 (see \tbl\ref{tab:face_tgap_parallel}).
 
-\textbf{explain the start step!!!}
-When we merge a pair of areas by expanding one over the other one,
-we must know when we start the expansion.
-A simple way is to add a column, say, \emph{step\_expand} 
-into the face table to record the step of starting expansion,
-but this will increase the size of the face table.
-To keep the face table compact,
-we compute value step\_expand on the fly by
+Before merging a pair of areas by expanding one over the other one,
+we must know when to start the expansion.
+This information is necessary for building the SSC.
+A simple way is to add a column, say, \emph{state\_expand} 
+into the face table during generating the tGAP.
+Then, the time of starting expansion can be recorded into the column.
+However, we would like to keep as few columns as possible
+so that the table is easy to read.
+As a result, we compute value  on the fly 
+when building the SSC.
+
+By definition, parallel events of a merging step happen at the same time.
+In other words, the faces involved in those parallel events have 
+the same state\_expand value ($s_\mathrm{expand}$) and 
+the same state\_high value ($s_\mathrm{high}$).
+The reverse is also true.
+If some faces have the same state\_high value,
+then the faces are involved in the parallel events of the same step.
+\textbf{explain further!}
+
+
+
+%If several faces have the same state\_high values,
+%then the merging expansions of these faces finish at the same state.
+%Those expansions also start at the same state 
+%because we require that 
+
+
+these faces start and end the merging animation at the same time.
+As an event involves two faces,
+the number of events finishing at state~$k$ can be calculated by
 $$
-step\_expand_i = 
+n_\mathrm{event} (k) = 
+\frac{\sum\limits_{s \in S_\mathrm{high}} [s=k]}{2},
 $$
+where notation~$S_\mathrm{high}$ denotes the set of state\_high values,
+and expression~$[s=k]$ returns~$1$ if the two values are equal 
+and returns~$0$ otherwise.
+The state to start the merging animation is
+$$
+s_\mathrm{expand} (k) = k - n_\mathrm{event} (k).
+$$
+Take the values in \tbl\ref{tab:face_tgap_parallel} for example,
+we have~$S_\mathrm{high} = \{2, 2, 3, 2, 2, 3, 4, 4, 5\}$, 
+$n_\mathrm{event} (2) = 2$, and~$s_\mathrm{expand} (2) = 0$.
+Therefore, the merging expansions of faces~1, 2, 4, and 5 
+should take place from $\mathrm{state} = 0$  to $\mathrm{state} = 2$.
+In merging sequence~I, the expansion of faces 1 and 2 
+takes place from $\mathrm{state} = 0$ to $\mathrm{state} = 1$.
+As a result, the expansion duration of faces 1 and 2 of sequence~II
+is twice as that of sequence~II;
+the former animation is easier for a map user to perceive. 
 
 
-According to \tbl\ref{tab:face_tgap}, 
-face~1 and face~2 are merged from step~0 to step~1,
-which is before the merging of face~5 and face~6 from step~1 to step~2.
-According to \tbl\ref{tab:face_tgap_parallel}, 
-the merging of face~1 and face~2 and the merging of face~5 and face~6
-happen parallelly from step~0 to step~2.
-
-Then, the space-scale cube will be built 
-according to the records of \tbl\ref{tab:face_tgap_parallel}.
+%According to \tbl\ref{tab:face_tgap}, 
+%face~1 and face~2 are merged from state~0 to state~1,
+%which is before the merging of face~5 and face~6 from state~1 to state~2.
+%According to \tbl\ref{tab:face_tgap_parallel}, 
+%the merging of face~1 and face~2 and the merging of face~5 and face~6
+%happen parallelly from state~0 to state~2.
+%
+%Then, the space-scale cube will be built 
+%according to the records of \tbl\ref{tab:face_tgap_parallel}.
 
 
 \begin{figure}[tb]
 \centering
 \includegraphics[page=2]{greedy_algorithm}
-\caption{Merging one pair of areas at each step (sequence~I), 
+\caption{Merging one pair of areas in each step (sequence~I), 
     and merging two pairs of areas parallelly (sequence~II).}
 \label{fig:face_tgap}
 \vspace{6mm} %for some reason, the space below the caption is not enough
@@ -540,15 +580,16 @@ according to the records of \tbl\ref{tab:face_tgap_parallel}.
 \centering
 \begin{tabular}{ccc}
 \hline
-face\_id &   step\_low   & step\_high    \\ \hline
+face\_id &   state\_low   & state\_high    \\ \hline
 1       &     0         &     1          \\
 2       &     0         &     1          \\
 3       &     0         &     3          \\ 
-4       &     0         &     3          \\
+4       &     0         &     2          \\
 5       &     0         &     2          \\
-6       &     0         &     2          \\         
-7       &     1         &     3          \\
-8       &     2         &     3          \\ \hline
+6       &     1         &     3          \\         
+7       &     2         &     4          \\
+8       &     3         &     4          \\ 
+9       &     4         &     5          \\ \hline
 \end{tabular}
 }
 %
@@ -562,17 +603,18 @@ face\_id &   step\_low   & step\_high    \\ \hline
 }
 \label{tab:face_tgap_parallel}
 \centering
-\begin{tabular}{ccc}
+\begin{tabular}{ccc} %\textbf{2}
 \hline
-face\_id &   step\_low   & step\_high    \\ \hline
-1       &     0         & \textbf{2}          \\
-2       &     0         & \textbf{2}          \\
+face\_id &   state\_low   & state\_high    \\ \hline
+1       &     0         &     \textbf{2}          \\
+2       &     0         &     \textbf{2}          \\
 3       &     0         &     3          \\ 
-4       &     0         &     3          \\
+4       &     0         &     2          \\
 5       &     0         &     2          \\
-6       &     0         &     2          \\         
-7       &  \textbf{2}   &     3          \\
-8       &     2         &     3          \\ \hline
+6       &  \textbf{2}   &     3          \\         
+7       &     2         &     4          \\
+8       &     3         &     4          \\ 
+9       &     4         &     5          \\ \hline
 \end{tabular}
 }
 \end{figure}
@@ -759,8 +801,8 @@ should be the same as the values before compressing
 According to the~$n_\mathrm{event}$ values,
 we can compute the accumulated number of events~$L_\mathrm{event} = 
 [0, 2, 3, 4, 5, 6]$.
-Note that these values are also ``step high'' values.
-That is, there holds~$L_\mathrm{step\_high} = L_\mathrm{event}$.
+Note that these values are also ``state high'' values.
+That is, there holds~$L_\mathrm{state\_high} = L_\mathrm{event}$.
 According to how much a user has zoomed,
 a scale, say $1:S_t$, can be computed.
 According to \citet{Huang2016Webmap},
@@ -833,7 +875,7 @@ the scale denominator will arrive at~$1{,}150{,}565$
 according to \eq\ref{eq:S_t_snap}.
 At that moment, all the areas are merged into one single area
 (see \figs\ref{fig:data}b).
-At each step, we want to parallelly merge some per cents of the areas.
+In each step, we want to parallelly merge some per cents of the areas.
 We tried three cases\footnote{%
 The three cases of maps can be browsed at
 \url{http://}}: 
@@ -937,7 +979,7 @@ Then, we integrated the parallel events into the SSC.
 On the client side, web maps are generated by slicing the SSC
 based on the method of \citet{Meijers2020Web}.
 To avoid half-way merging, we require the merging animation 
-to stop at complete steps (which contain parallel events).
+to stop at complete states (which contain parallel events).
 Our case study shows that 
 our approach provides with smoother transition for zooming.
 
