@@ -356,13 +356,13 @@ so that map users easily understand the changes,
 we merge by gradually expanding an area over another area
 (see \fig\ref{fig:smooth_merging}).
 This expansion is based on slicing the space-scale cube shown in
-\fig\ref{fig:smooth_merging_two_rectangles}.
+\fig\ref{fig:smooth_merging_ssc}.
 For example, \figs\ref{fig:smooth_merging}a,
 \ref{fig:smooth_merging}b, and \ref{fig:smooth_merging}c
 are respectively obtained from slicing the cube 
 at the bottom, the middle, and the top.
 The details of slicing a cube can be found in \citet{Meijers2020Web}.
-The cube of \fig\ref{fig:smooth_merging_two_rectangles} was built 
+The cube of \fig\ref{fig:smooth_merging_ssc} was built 
 based on the \emph{Eater} of \citet{Suba2014Merge}.
 The Eater was used because it provides a solution 
 for an area with any kind of shape, which is more robust than
@@ -385,12 +385,12 @@ the common boundary exists only in \fig\ref{fig:smooth_merging}a but not in
 \vspace{6mm}
 %
 \centering
-\includegraphics[scale=0.15]{smooth_merging_two_rectangles}
+\includegraphics[scale=0.15]{smooth_merging_ssc}
 \caption{The space-scale cube for the merging 
     of \fig\ref{fig:smooth_merging}.
     This figure is made by visualizing the content of an obj file in 
     ParaView 5.6.0.}
-\label{fig:smooth_merging_two_rectangles}
+\label{fig:smooth_merging_ssc}
 \end{figure}
 
 
@@ -557,13 +557,6 @@ obtained by our greedy algorithm.
 
 
 
-
-
-
-
-
-
-
 \subsection{Integrating the parallel events into the tGAP}
 
 \citet[\p159]{Meijers2011Thesis} designed tables 
@@ -574,20 +567,20 @@ Take the face table as an example,
 it contains columns \emph{face\_id}, 
 \emph{imp\_low}, \emph{imp\_high}, \emph{imp\_own},
 \emph{feature\_class\_id}, \emph{area}, and \emph{bbox}.
-We add columns \emph{state\_low} and \emph{state\_high} into the table 
+We add columns \emph{state\_start} and \emph{state\_end} into the table 
 so that it is easy to see when a face should appear or disappear 
 (see \tbls\ref{tab:face_tgap} and~\ref{tab:face_tgap_parallel},
 where some columns are hidden).
 That is, a face should appear
-when the merging arrives at the state\_low value,
+when the merging arrives at the state\_start value,
 and the face should disappear
-when the merging arrives at the state\_high value.
+when the merging arrives at the state\_end value.
 When switching from single-event merging 
 (sequence~I of \fig\ref{fig:face_tgap})
 to parallel merging (sequence~II of \fig\ref{fig:face_tgap}),
-we observe that the state\_high values of faces~1 and~2 are changed from~1 to~2
+we observe that the state\_end values of faces~1 and~2 are changed from~1 to~2
 (see \tbl\ref{tab:face_tgap_parallel}, the new values are underlined).
-Also, the state\_low value of faces~6 is changed from~1 to~2
+Also, the state\_start value of faces~6 is changed from~1 to~2
 (see \tbl\ref{tab:face_tgap_parallel}).
 The columns and records of both the edge table and the face-hierarchy table 
 will be changed accordingly.
@@ -603,42 +596,50 @@ into the face table during generating the tGAP.
 Then, the time of starting expansion can be recorded into the column.
 However, we would like to keep as few columns as possible
 so that the table is easy to read.
-As a result, we compute value  on the fly 
+As a result, we compute state\_expand values on the fly 
 when building the SSC.
 
 By definition, parallel events of a merging step happen at the same time.
 In other words, the faces involved in those parallel events have 
 the same state\_expand value ($s_\mathrm{expand}$) and 
-the same state\_high value ($s_\mathrm{high}$).
+the same state\_end value ($s_\mathrm{high}$).
 The reverse is also true.
-If some faces have the same state\_high value,
+If some faces have the same state\_end value,
 then the faces are involved in the parallel events of the same step.
 The reason is that the mergings of these faces will finish at $s_\mathrm{high}$,
 and no merging will start earlier or later than $s_\mathrm{expand}$
 because we required that the next step starts only when the current step stops.
 As an event involves two faces,
 the number of events finishing at state~$s_\mathrm{end}$ can be calculated by
-$$
+\begin{equation}
+\label{eq:n_event_state}
 n_\mathrm{event} (s_\mathrm{end}) = 
-\frac{\sum\limits_{s \in S_\mathrm{high}} [s=s_\mathrm{end}]}{2},
-$$
-where notation~$S_\mathrm{high}$ denotes the set of state\_high values,
+\frac{\sum\limits_{s \in S_\mathrm{end}} [s=s_\mathrm{end}]}{2},
+\end{equation}
+where notation~$S_\mathrm{end}$ denotes the set of state\_end values,
 and expression~$[s=s_\mathrm{end}]$ returns~$1$ if the two values are equal 
 and returns~$0$ otherwise.
 The state to start the merging animation is
-$$
+\begin{equation}
+\label{eq:s_expand_state}
 s_\mathrm{expand} (s_\mathrm{end}) = s_\mathrm{end} - n_\mathrm{event} (s_\mathrm{end}).
-$$
+\end{equation}
 Take the values in \tbl\ref{tab:face_tgap_parallel} for example,
-we have~$S_\mathrm{high} = \{2, 2, 3, 2, 2, 3, 4, 4, 5\}$, 
+we have~$S_\mathrm{high} = \{2, 2, 3, 2, 2, 4, 3, 4, 5\}$, 
 $n_\mathrm{event} (2) = 2$, and~$s_\mathrm{expand} (2) = 0$.
 Therefore, the merging expansions of faces~1, 2, 4, and 5 
-should take place from $\mathrm{state} = 0$  to $\mathrm{state} = 2$.
+should take place from state~$0$ to state~$2$,
+which can be observed from the two tilted faces above the two pink faces 
+in \fig\ref{fig:ssc_parallel}.
 In merging sequence~I, the expansion of faces 1 and 2 
-takes place from $\mathrm{state} = 0$ to $\mathrm{state} = 1$.
+takes place from state~$0$ to state~$1$
+(see the tilted face above the pink face on the left-hand side of \fig\ref{fig:ssc_single}),
+and the the expansion of faces 3 and 4
+takes place from state~$1$ to state~$2$
+(see the tilted face above the pink face on the right-hand side of \fig\ref{fig:ssc_single}).
 As a result, the expansion duration of faces 1 and 2 of sequence~II
 is twice as that of sequence~II;
-the former animation is easier for a map user to perceive. 
+the animation with parallel events is easier for a map user to perceive. 
 
 
 %According to \tbl\ref{tab:face_tgap}, 
@@ -664,20 +665,20 @@ the former animation is easier for a map user to perceive.
 %
 \captionsetup*{type=table} %*: suppress warning "The caption type was already set to figure"
 \parbox{.49\linewidth}{
-\caption{Face table of merging sequence~I 
-    of \fig\ref{fig:face_tgap}}
+\caption{Some columns of the face table of merging sequence~I, 
+    shown in \fig\ref{fig:face_tgap}.}
 \label{tab:face_tgap}
 \centering
 \begin{tabular}{ccc}
 \hline
-face\_id &   state\_low   & state\_high    \\ \hline
+face\_id &   state\_start   & state\_end    \\ \hline
 1       &     0         &     1          \\
 2       &     0         &     1          \\
 3       &     0         &     3          \\ 
 4       &     0         &     2          \\
 5       &     0         &     2          \\
-6       &     1         &     3          \\         
-7       &     2         &     4          \\
+6       &     1         &     4          \\         
+7       &     2         &     3          \\
 8       &     3         &     4          \\ 
 9       &     4         &     5          \\ \hline
 \end{tabular}
@@ -685,21 +686,20 @@ face\_id &   state\_low   & state\_high    \\ \hline
 %
 %
 \parbox{.49\linewidth}{
-\caption{Face table of merging sequence~II 
-    of \fig\ref{fig:face_tgap}.
-}
+\caption{Some columns of the face table of merging sequence~II, 
+    shown in \fig\ref{fig:face_tgap}.}
 \label{tab:face_tgap_parallel}
 \centering
-\begin{tabular}{ccc} %\textbf{2}
+\begin{tabular}{ccc} %\underbar{2}
 \hline
-face\_id &   state\_low & state\_high    \\ \hline
-1       &     0         &     \underbar{2}          \\
-2       &     0         &     \underbar{2}          \\
+face\_id &   state\_start & state\_end    \\ \hline
+1       &     0         & \underbar{2}   \\
+2       &     0         & \underbar{2}   \\
 3       &     0         &     3          \\ 
 4       &     0         &     2          \\
 5       &     0         &     2          \\
-6       &  \underbar{2}   &     3          \\         
-7       &     2         &     4          \\
+6       & \underbar{2}  &     4          \\         
+7       &     2         &     3          \\
 8       &     3         &     4          \\ 
 9       &     4         &     5          \\ \hline
 \end{tabular}
@@ -710,14 +710,18 @@ face\_id &   state\_low & state\_high    \\ \hline
 \parbox{.49\linewidth}{
 \centering
 \includegraphics[width=0.8\linewidth]{top10nl_9x9_5_single}
-\caption{pass.}
+\vspace{3mm} %for some reason, the space above the caption is not enough
+\caption{The SSC of merging sequence~I, 
+    shown in \fig\ref{fig:face_tgap}.}
 \label{fig:ssc_single}
 }
 %\hfill
 \parbox{.49\linewidth}{
 \centering
 \includegraphics[width=0.8\linewidth]{top10nl_9x9_5_parallel}
-\caption{pass.}
+\vspace{3mm} %for some reason, the space above the caption is not enough
+\caption{The SSC of merging sequence~II, 
+    shown in \fig\ref{fig:face_tgap}.}
 \label{fig:ssc_parallel}
 }
 \end{figure}
@@ -725,31 +729,140 @@ face\_id &   state\_low & state\_high    \\ \hline
 
 
 
-\subsection{Snapping to Certain States}
+\subsection{Snapping to an Existing State}
 \label{sec:snap}
 
 For a zooming action
 (that is, slicing the SSC with a horizontal plane), 
-we always snap the map to a certain state
+we always snap the map to an existing state
 so that users will not see a merging operation stops half-way
 and will not see transition artifact (such as slivers or blended colors).
-In order to do that, we compress the information of
-merging events into 
+Take \fig\ref{fig:smooth_merging} for example, 
+the merging animation should stop at 
+either \ref{fig:smooth_merging}a or \ref{fig:smooth_merging}e,
+but not at \ref{fig:smooth_merging}b, \ref{fig:smooth_merging}c, 
+or \ref{fig:smooth_merging}d.
+Moreover, some states do not exist because of the parallel events.
+Such a case can be found in sequence~II of \fig\ref{fig:face_tgap},
+where state~$1$ does not exist.
+In this case, the merging animation should not stop at state~$1$.
+In order to snap to existing state, 
+we compress the information of merging events into 
 a JSON file (JavaScript Object Notation File).
-Then, we send the JSON file to the client side and uncompress it.
+Then, the JSON file will be sent to the client side and uncompressed.
 
 
-\tbl\ref{tab:sequence_greedy} shows an example of those values 
-based on the merging steps of \fig\ref{fig:sequence_greedy}.
-Now, we have a column of values $n_\mathrm{diff}$.
+\subsubsection{On the Server Side}
+\label{sec:snap_server}
+
+On the server side, we compute the values shown in \tbl\ref{tab:sequence_greedy}.
+\tbl\ref{tab:sequence_greedy} is based on the merging steps of
+\fig\ref{fig:sequence_greedy},
+where parallel parameter~$r_\mathrm{parallel} = 0.3$ is used.
+The computation starts from step~$1$.
+At the beginning, there are $7$ areas on the map, \ie$M_0$.
+According to \eq\ref{eq:n_expect},
+we expect to parallel three events ($n_{\mathrm{expect},1} = 3$).
+However, only two event can be paralleled at step~$1$ of
+\fig\ref{fig:sequence_greedy}.
+Therefore, we have~$n_{\mathrm{event},1} = 2$.
+Then, the difference of the expected value and the real value
+can be computed by
+\begin{equation}
+\label{eq:n_diff}
+n_{\mathrm{diff},i} = n_{\mathrm{expect},i} - n_{\mathrm{event},i}.
+\end{equation}
+That is, we have~$n_{\mathrm{diff},1}=1$ for step~$1$
+(also see the $n_\mathrm{diff}$ value in the first row of \tbl\ref{tab:sequence_greedy}).
+We require that the starting state is~$s_{\mathrm{start},1} = 0$ for the first step.
+Then, the ending state can be computed by
+\begin{equation}
+\label{eq:state_end}
+s_{\mathrm{end},i} = s_{\mathrm{start},i} + n_{\mathrm{event},i}.
+\end{equation}
+That is, we have~$s_{\mathrm{end},1}=2$
+(also see the state\_end value in the first row of \tbl\ref{tab:sequence_greedy}).
+At this point, the computation for step~$1$ completes.
+
+
+\begin{figure}[tb]
+%\centering
+%\includegraphics[page=2]{blocked_polygons}
+%\caption{.
+%}
+%\label{fig:sequence_greedy}
+%\vspace{6mm} %for some reason, the space below the caption is not enough
+%
+%
+%
+\captionsetup*{type=table} %*: suppress warning "The caption type was already set to figure"
+\caption{Some information of the merging sequence shown in \tbl\ref{tab:sequence_greedy}.
+Column~$n_\mathrm{area}$ shows the area number of the map at starting state~$s$,
+that is, $|M_s|$ of \eq\ref{eq:n_expect}.
+}
+\label{tab:sequence_greedy}
+\centering
+\begin{tabular}{ccccccc}
+	\hline
+	step & $n_\mathrm{area}$ & $n_\mathrm{expect}$ 
+	& $n_\mathrm{event}$ & $n_\mathrm{diff}$ & state\_start & state\_end \\ \hline
+	1        & 7      & 3        & 2        & 1     & 0      & 2      \\
+	2        & 5      & 2        & 1        & 1     & 2      & 3      \\
+	3        & 4      & 2        & 1        & 1     & 3      & 4      \\
+	4        & 3      & 1        & 1        & 0     & 4      & 5      \\
+	5        & 2      & 1        & 1        & 0     & 5      & 6      \\ \hline
+%	6     & 1      & ---      & ---      & ---    \\ \hline
+\end{tabular}
+\end{figure}
+
+For the next step, the number of areas can be computed by
+$$
+n_{\mathrm{area},i+1} = n_{\mathrm{area},i} - n_{\mathrm{event},i},
+$$
+where variable~$n_{\mathrm{area},i}$ denotes the area number 
+at the starting state of step~$i$.
+Furthermore, the starting state, $s_{\mathrm{start},i+1}$, is the same as  
+$s_{\mathrm{end},i}$.
+Based on~$n_{\mathrm{area},i+1}$ and~$s_{\mathrm{start},i+1}$,
+other values of this step can be computed.
+This process starts from step~$i=1$ and ends until only one area left.
+As a result, we have all the values of \tbl\ref{tab:sequence_greedy}.
+
+
+%Then the difference in step~$i$ is
+%\begin{equation}
+%\label{eq:n_diff}
+%n_{\mathrm{diff},i} = n_{\mathrm{expect},i} - n_{\mathrm{event},i},
+%\end{equation}
+%where variables~$n_{\mathrm{expect},i}$ and~$n_{\mathrm{event},i}$
+%are respectively the expected and the real numbers of events in step~$i$,
+%which are consistent with the definitions of 
+%\eqs\ref{eq:n_expect} and~\ref{eq:n_event_state}.
+%For the next step, we compute
+%$$
+%n_{\mathrm{area},i+1} = n_{\mathrm{area},i} - n_{\mathrm{event},i},
+%$$
+%where variable~$n_{\mathrm{area},i}$
+%represents the area number at the starting state of step~$i$.
+%Based on number~$n_{\mathrm{area},i+1}$,
+%we can further compute $n_{\mathrm{expect},i+1}$ and obtain $n_{\mathrm{event},i+1}$.
+%This process starts from step~$i=1$ and ends until only one area left.
+
+Now, we have a column of $n_\mathrm{diff}$ values.
 We compress those values as the form of 
 $$
-[[n_{\mathrm{diff},0},j_1], [n_{\mathrm{diff},j_1},j_2], \ldots, 
+[[n_{\mathrm{diff},1},j_1], [n_{\mathrm{diff},j_1},j_2], \ldots, 
 [n_{\mathrm{diff},i},j_k], [n_{\mathrm{diff},i+j_k},j_{k+1}], \ldots],
 $$
 where variable~$j_k$ is the number of the same $n_\mathrm{diff}$ values in a row 
-starting at state~$i$.
-For example,the $n_\mathrm{diff}$ values of \tbl\ref{tab:sequence_greedy}
+starting at step~$i$.
+Take the values of \tbl\ref{tab:sequence_greedy} for example, 
+$j_0$ is~$3$ 
+because the first three~$n_\mathrm{diff}$ values are the same (\ie1),
+and $j_1$ is~$2$ 
+because the following two~$n_\mathrm{diff}$ values are the same (\ie0). 
+According to our strategy, 
+the $n_\mathrm{diff}$ values of \tbl\ref{tab:sequence_greedy}
 will be compressed to $[[1,3], [0,2]]$,
 where each pair of values in the inner square brackets 
 represent the event number and the repeat times.
@@ -762,86 +875,28 @@ The content of the JSON file is as following.
                 }
 \end{verbatim}
 If we would have a list of $n_\mathrm{diff}$ values~$[0, 0, 0, 0, 0, 0, 5, 0, 0]$,
-then the compressed content will be~$[[0,6], [5,1], [0,2]]$.
+then the compressed content would be~$[[0,6], [5,1], [0,2]]$.
 Our case study will show that this way of compressing is efficient
 (see \sect\ref{sec:case_study}).
 
 
 
-
-
-
-Then the difference is
-\begin{equation}
-\label{eq:n_diff}
-n_{\mathrm{diff},i} = n_{\mathrm{expect},i} - n_{\mathrm{event},i}.
-\end{equation}
-For the next state, we compute
-$$
-n_{\mathrm{area},i+1} = n_{\mathrm{area},i} - n_{\mathrm{event},i}.
-$$
-Based on number~$n_{\mathrm{area},i+1}$,
-we can further compute $n_{\mathrm{expect},i+1}$ and obtain $n_{\mathrm{event},i+1}$.
-This process starts from state~$i=0$ and ends until only one area left.
-
-
-
-
-
-
-
-
-
-
-\begin{figure}[tb]
-	%\centering
-	%\includegraphics[page=2]{blocked_polygons}
-	%\caption{.
-	%}
-	%\label{fig:sequence_greedy}
-	%\vspace{6mm} %for some reason, the space below the caption is not enough
-	%
-	%
-	%
-	\captionsetup*{type=table} %*: suppress warning "The caption type was already set to figure"
-	\caption{.
-	}
-	\label{tab:sequence_greedy}
-	\centering
-	\begin{tabular}{ccccc}
-		\hline
-		state & $n_\mathrm{area}$ & $n_\mathrm{expect}$ 
-		& $n_\mathrm{event}$ & $n_\mathrm{diff}$ \\ \hline
-		0     & 7      & 3        & 2        & 1      \\
-		1     & 5      & 2        & 1        & 1      \\
-		2     & 4      & 2        & 1        & 1      \\
-		3     & 3      & 1        & 1        & 0      \\
-		4     & 2      & 1        & 1        & 0      \\
-		5     & 1      & ---      & ---      & ---    \\ \hline
-	\end{tabular}
-\end{figure}
-
-
-
-
-
-
-
-
+\subsubsection{On the Client Side}
+\label{sec:snap_client}
 
 
 When a user opens our web map,
-the JSON file will be sent to the client.
+the JSON file will be sent to the client side.
 We can unpack the content of entry ``eventdiff\_repetition'' and 
 get the list of $n_\mathrm{diff}$ values~$[1, 1, 1, 0, 0]$.
-Starting from state~$i=0$,
+Starting from step~$i=1$,
 we can again compute~$n_{\mathrm{expect},i}$ according to \eq\ref{eq:n_expect},
 where parallel parameter~$r_\mathrm{parallel}=0.3$ 
-and face number~$n_{\mathrm{area},0} = 7$
+and face number~$n_{\mathrm{area},1} = 7$
 can be obtained also from the JSON file.
 Then, we can computer the actual number of parallel events by
 \begin{equation*}
-\label{eq:n_event}
+\label{eq:n_event_step}
 n_{\mathrm{event},i} = n_{\mathrm{expect},i} - n_{\mathrm{diff},i},
 \end{equation*}
 which is an inverse function of \eq\ref{eq:n_diff}.
@@ -851,9 +906,9 @@ should be the same as the values before compressing
 
 According to the~$n_\mathrm{event}$ values,
 we can compute the accumulated number of events~$L_\mathrm{event} = 
-[0, 2, 3, 4, 5, 6]$.
-Note that these values are also ``state high'' values.
-That is, there holds~$L_\mathrm{state\_high} = L_\mathrm{event}$.
+[0, 2, 3, 4, 5, 6]$,
+which is also the list of existing states
+(see columns~state\_start and state\_end in \tbl\ref{tab:sequence_greedy}).
 According to how much a user has zoomed,
 a scale, say $1:S_t$, can be computed.
 According to \citet{Huang2016Webmap},
@@ -863,7 +918,7 @@ the number of merging events that should be processed can be computed by
 E_t = N_b \left(1-\frac{S^2_b}{S^2_t}\right),
 \end{equation}
 where parameter~$S_b$ is the scale denominator of the base map,
-and parameter~$N_b$ is the number of areas on the base map.
+and parameter~$N_b = |M_0|$ is the number of areas on the base map.
 In our example regarding to list~$L_\mathrm{event}$,
 if event number~$E_t \le 0$, the base map should be presented;
 if $E_t \ge 6$, the last value of list~$L_\mathrm{event}$,
@@ -871,7 +926,7 @@ the map with all the merging events having been processed
 should be presented.
 Otherwise, if $0<E_t < 6$, we snap event number~$E_t$ 
 to the closest value in list~$L_\mathrm{event}$,
-which is marked by $E_{t,\mathrm{snap}}$.
+which is marked by~$E_{t,\mathrm{snap}}$.
 The scale denominator corresponding to event number~$E_{t,\mathrm{snap}}$
 can be computed by 
 \begin{equation}
@@ -880,7 +935,8 @@ S_{t,\mathrm{snap}} = S_b \sqrt{\frac{N_b}{N_b-E_{t,\mathrm{snap}}}}.
 \end{equation}
 Note that \eq\ref{eq:S_t_snap} is an inverse function of \eq\ref{eq:E_t}.
 At the end of the zooming action, 
-the map will stop at scale~$1:S_{t,\mathrm{snap}}$.
+the map will snap to state~$E_{t,\mathrm{snap}}$,
+which is at scale~$1:S_{t,\mathrm{snap}}$.
 
 
 %\subsection{Line simplification (smoothly moving vertices for the SSC)}
