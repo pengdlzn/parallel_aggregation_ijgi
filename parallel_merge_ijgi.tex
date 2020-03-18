@@ -62,7 +62,8 @@ However, because of the given sequence
 in which the events are processed one by one, 
 the map users still experience many small shock changes 
 (because the merging transition time of their zooming out can be short).
-We try to produce smoother changes by paralleling the events.
+We try to produce smoother changes by paralleling some generalization operations,
+which in our case are the merging events.
 We define a \emph{step} as a set of merging events happening at the same time.
 In our method, a merging step is completely processed 
 before the next merging step takes place (all sequential). 
@@ -133,14 +134,14 @@ and see built-up areas when zooming out.
 That is why geographical information is dependent on the scale
 \citep{Muller1995Generalization,Weibel1997}. 
 In order to prepare map data for different scales,
-map generalization is used to generate coarser data 
+map generalization is employed to generate coarser data 
 for maps at smaller scales,
 from a detailed map.
 A lot of research has been devoted to map generalization.
 \citet{Mackaness2017Generalization} gave a taxonomy of 
 generalization algorithms, 
 including selection, simplification, aggregation, and so on.
-Often, a multi-representation database (MRDB) is used to store
+Often, a multi-representation database (MRDB) is utilized to store
 maps at different scales and to send proper data to clients on request
 \citep[\eg][]{Hampe2004multiple}.
 However, large discrete changes between different map representations
@@ -216,8 +217,9 @@ when users are zooming out.
 If the pairs are processed one by one 
 (e.g., \fig\ref{fig:intro}c--f),
 then the time interval for each merging operation has to be very short.
-For example, a user may still get the impression of
-a shock change from \fig\ref{fig:intro}e to \fig\ref{fig:intro}g
+For example, a user may get the impression of
+a direct change from \fig\ref{fig:intro}e to \fig\ref{fig:intro}g
+(without the intermediate state of \fig\ref{fig:intro}f)
 even when the three areas on the right-hand side of \fig\ref{fig:intro}e
 are merged gradually.
 To provide users with more gradual impression, 
@@ -292,7 +294,7 @@ Third, they made chunks of the SSC
 so that they were able to send only the data of the place
 where a map user was reading.
 \citet{Suba2014Merge} proposed three methods 
-to merge a pair of areas in the manner of gradual change, 
+to merge a pair of areas in a gradual manner, 
 which are the ``Single flat plane'', the ``Zipper'', and the ``Eater''.
 Basically, the \emph{winner} gradually expands over the \emph{loser}.
 We will use the ``Eater'' because it works for all kinds of polygons 
@@ -320,7 +322,7 @@ They proposed different strategies of assigning
 the work of handling map data
 according to the machine abilities of the clients.
 
-\citet{Huang2017Matrix} used a matrix to guide 
+\citet{Huang2017Matrix} utilized a matrix to guide 
 both pruning rivers and removing vertices for a river network, 
 where the rows and the columns respectively represent
 the rivers and the vertices.
@@ -1024,7 +1026,7 @@ $L_{\mathrm{diff\_rep},0.1}$ = [[51, 1], [138, 1], [152, 1], [200, 1], [205, 1],
 \label{tbl:parallel_param_comparison}
 \end{table}
 
-We have used the ``Eater'' of \citet{Suba2014Merge},
+We have employed the ``Eater'' of \citet{Suba2014Merge},
 implemented in Python, 
 to generate the elements
 (vertices, triangulated faces, and boundaries)
