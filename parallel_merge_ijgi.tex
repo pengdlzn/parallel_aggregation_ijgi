@@ -52,21 +52,20 @@ if there are multiple corresponding authors, add author initials) +xx-xxxx-xxx-x
 %meaning of time.
 Land-cover areas are important features on maps.
 When users zoom out on digital maps, 
-some land-cover areas become too tiny to be seen, 
-which result in visual clutters. 
-To avoid this problem, 
-we merge small areas into their neighbors to form larger areas. 
-We define an \emph{event} as merging a small area into a neighbor 
-(where the neighbor gradually expands over the small area).
+some land-cover areas become too tiny to be seen, resulting in visual clutters. 
+To avoid this problem, the map needs to be generalized.
+We merge small areas into their neighbors to form larger ones. 
+We define an \emph{event} as a generalization operation, 
+which in our case is merging the least important area into a neighbor 
+(where the neighbor gradually expands over the least important area).
 However, because of the given sequence 
 in which the events are processed one by one, 
 the map users still experience many small shock changes 
 (because the merging transition time of their zooming out can be short).
-We try to produce smoother changes by paralleling some generalization operations,
-which in our case are the merging events.
-We define a \emph{step} as a set of merging events happening at the same time.
-In our method, a merging step is completely processed 
-before the next merging step takes place (all sequential). 
+We try to produce smoother changes by paralleling some events.
+We define a \emph{step} as a set of events happening at the same time.
+In our method, a step is completely processed 
+before the next step takes place (all sequential). 
 In this way, each event has more time to be observed by users,
 resulting in smoother zooming. 
 Furthermore, we require that 
@@ -81,7 +80,7 @@ This paper shows the details of finding and processing parallel events.
 Then, this paper compares between the scale transitions of maps generated
 based on single-event merging step and parallel-event merging step.
 Our original contribution is the proposal of the parallel generalization
-maintaining map consistency over scale change. 
+maintaining map consistency over scale transition. 
 %why? how? what? so what?
 %%%%
 %%%% Alternative abstract
@@ -105,7 +104,7 @@ maintaining map consistency over scale change.
 }
 
 % Keywords
-\keyword{Map generalization, Vario-scale maps, Continuous generalization}
+\keyword{Space-scale cube, Map generalization, Vario-scale maps, Continuous generalization}
 
 
 
@@ -144,10 +143,10 @@ including selection, simplification, aggregation, and so on.
 Often, a multi-representation database (MRDB) is utilized to store
 maps at different scales and to send proper data to clients on request
 \citep[\eg][]{Hampe2004multiple}.
-However, large discrete changes between different map representations
+However, large and discrete changes between different map representations
 may confuse users,
 so continuous map generalization (CMG) is needed to
-provide smooth scale zoom.
+provide smooth scale transition.
 Algorithms of CMG have been proposed 
 to morph raster maps
 \citep[\eg][]{Pantazis2009a,Pantazis2009b}, 
@@ -179,15 +178,18 @@ However, if zooming is realized by switching between
 some levels of map representations, 
 large and discrete changes usually happen
 (e.g., from \fig\ref{fig:intro}a to \fig\ref{fig:intro}b), 
-which is difficult for map users to understand.
-To provide small changes, 
+which make users to lose their context.
+To provide small changes for scale transition, 
 \citet{vanOosterom2005} proposed 
 the topological Generalized Area Partitioning (tGAP) tree,
-where in each step a single area is merged into
+where in each step the least important area is merged into
 its most compatible neighbor 
 (see \fig\ref{fig:intro}c--g).
-Further, a space-scale cube (SSC) can be built so that 
-map users can view the gradual transition of the merge operation
+Further, \citet{vanOosterom2014Support} proposed smooth tGAP
+to gradually apply generalization operations 
+(such as merge, split, and simplify).
+Based on the smooth tGAP, a space-scale cube (SSC) can be built so that 
+the scale transition of a map can be realized smoothly
 by slicing the SSC \citep[see][]{Meijers2020Web}.
 This gradual strategy apparently allows users 
 to follow the zooming more easily.
@@ -209,28 +211,38 @@ Each arrow indicates that an area will be merged into another one.
 \end{figure}
 
 When users zoom on maps, 
-they do not want to wait for too long 
-to see the desired level.
+they do not want to wait for too long to see the desired level.
 On a real map, however, 
-there are way too many pairs of areas to merge 
+there are way too many changes to apply for the scale transition 
 when users are zooming out.
-If the pairs are processed one by one 
-(e.g., \fig\ref{fig:intro}c--f),
-then the time interval for each merging operation has to be very short.
+If the changes are processed one by one 
+(e.g., \fig\ref{fig:intro}c--g),
+then the time interval for each change has to be very short.
+Users may still lose their context 
+because it can be difficult for them to perceive necessary changes.
 For example, a user may get the impression of
 a direct change from \fig\ref{fig:intro}e to \fig\ref{fig:intro}g
 (without the intermediate state of \fig\ref{fig:intro}f)
 even when the three areas on the right-hand side of \fig\ref{fig:intro}e
 are merged gradually.
 To provide users with more gradual impression, 
-we parallel the merging operations
-(see \fig\ref{fig:intro}h--j).
-If we select some of the merging operations
-fairly evenly distributed on the whole map 
-(there may be only a small number of merging operations 
-happening on the screen),
-then the changes are easy for users to understand
-because these changes now have more time to take place.
+we parallel the generalization operations,
+which in this paper are merging operations.
+\fig\ref{fig:intro}h--j shows such an example,
+where at each step two merging operations happen in parallel.
+If we select some of the generalization operations
+and process them in parallel,
+then each operation has more time to take place 
+than the operations are processed one after another.
+Moreover, if the selected operations
+fairly evenly distribute on the whole map, 
+then there may be only a small number of operations 
+happening on the screen.
+Apparently, it is easier for users to follow 
+when fewer operations take place longer on the screen.
+As for the operations happening outside the screen,
+they can be ignored because 
+they are not interesting to map users at the moment.
 For example, in the focused area, there is only one merging operation 
 from \fig\ref{fig:intro}i to \fig\ref{fig:intro}j
 while there are two merging operations  
@@ -243,9 +255,7 @@ This paper is organized as follows.
 Our methodology is presented in \sect\ref{sec:methodology}.
 We show a case study in \sect\ref{sec:case_study}.
 Finally, \sect\ref{sec:concluding_remarks} draws our conclusion
-and indicate our future work.
-
-
+and present our future work.
 
 
 
@@ -279,20 +289,33 @@ to generalize a land-cover map.
 In the chain of processing land-cover polygons, 
 they integrated cleaning, dissolving, splitting, aggregating, reclassifying, and simplifying. 
 
-
-\citet{Meijers2020Web} explained the principles of 
+\citet{vanOosterom2014Support} explained the concept of the space-scale cube (SSC).
+At the bottom of the SSC is a detailed land-cover map.
+All the land-cover areas extrude along the $z$-axis.
+That is, an area on map becomes a polyhedron in the SSC.
+Whenever a generalization operation happens, 
+the extrusions of the involved areas stop;
+then, the newly generated areas take the place and start to extrude.
+On this basis, the map at any scale can be generated by slicing the SSC 
+with a horizontal plane.
+Furthermore, they represented the smooth tGAP in the SSC.
+A typical example of the smooth generalization operation is that 
+an area merges another one by gradually expanding over it.
+The common boundary of the two areas is a vertical wall 
+for the normal tGAP in the SSC.
+While in the SSC for the smooth tGAP, 
+the wall starts to tilt when the expansion begins.
+Based on the SSC, \citet{Meijers2020Web} explained the principles of 
 implementing a web map of land-cover areas.
-First, they generated an SSC, 
-where an area on map becomes a polyhedron in the SSC.
-They used the SSC because 
-they wanted the web map to support smooth zoom
-\citep[see][]{vanOosterom2014Support}.
-Second, they showed how to slice the SSC 
-to output a web map at a given scale.
-The slicing is based on the GPU at the client side.
-Third, they made chunks of the SSC 
-so that they were able to send only the data of the place
+They showed a protocol to react to a map user's browsing the map.
+They made chunks of the data used to build the SSC
+so that they were able to send only the chunks relevant to the place
 where a map user was reading.
+They showed how to slice the SSC to output a web map at a given scale 
+using the GPU at the client side.
+In addition to slicing the SSC with a horizontal plane,
+they could also slice the SSC with a curly surface 
+to output a map with mixed scales.
 \citet{Suba2014Merge} proposed three methods 
 to merge a pair of areas in a gradual manner, 
 which are the ``Single flat plane'', the ``Zipper'', and the ``Eater''.
@@ -409,9 +432,9 @@ We define a \emph{step} as
 a set of events happening at the same time.
 For example, 
 \fig\ref{fig:event_and_step}b is obtained from 
-\fig\ref{fig:event_and_step}a by processing merging step with one event.
+\fig\ref{fig:event_and_step}a by processing a merging step with one event.
 \fig\ref{fig:event_and_step}d is obtained from 
-\fig\ref{fig:event_and_step}c by processing merging step with two events.
+\fig\ref{fig:event_and_step}c by processing a merging step with two events.
 In our method, a merging step is completely processed 
 before the next step takes place (all sequential). 
 
@@ -535,9 +558,9 @@ may merge in the next step.
 If we have found $n_\mathrm{expect}$ events 
 or there is no free area anymore,
 then finding merging events of the step finishes.
-Consequently, we merge each pair of the areas of all the events,
+Consequently, we parallelly merge all the pairs of areas for the events,
 free all the blocked areas,
-increase state~$s$ by value of~$n_\mathrm{event}$,
+increase state~$s$ by value~$n_\mathrm{event}$,
 and create map~$M_s$ of the new areas and the freed areas.
 Then, finding merging events for the next step starts.
 This finding completes until there is only one area left on the map.
