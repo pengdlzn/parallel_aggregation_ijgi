@@ -373,28 +373,28 @@ should be kept according to that given scale.
 %\subsection{Smooth Merging}
 %\label{sec:smooth_merging}
 
-In order to provide smooth zooming of merging
-so that map users easily understand the changes,
+In order to provide smooth merging
+so that map users can easily follow the changes,
 we merge by gradually expanding an area over another area
 (see \fig\ref{fig:smooth_merging}).
-This expansion is based on slicing the space-scale cube shown in
+This expansion is based on slicing the space-scale cube (SSC) shown in
 \fig\ref{fig:smooth_merging_ssc}.
 For example, \figs\ref{fig:smooth_merging}a,
 \ref{fig:smooth_merging}b, and \ref{fig:smooth_merging}c
 are respectively obtained from slicing the cube 
 at the bottom, the middle, and the top.
 The details of slicing a cube can be found in \citet{Meijers2020Web}.
-The cube of \fig\ref{fig:smooth_merging_ssc} was built 
+The SSC of \fig\ref{fig:smooth_merging_ssc} was built 
 based on the \emph{Eater} of \citet{Suba2014Merge}.
 The Eater was used because it provides a solution 
 for an area with any kind of shape, which is more robust than
 \emph{Single flat plane} and \emph{Zipper} \citep{Suba2014Merge}.
 Note that the common boundary of the two areas disappears
-very shortly after the expansion starts;
-the common boundary exists only in \fig\ref{fig:smooth_merging}a but not in
-\fig\ref{fig:smooth_merging}b,
-\fig\ref{fig:smooth_merging}c, or
-\fig\ref{fig:smooth_merging}d.
+very shortly after the expansion starts.
+That is, the common boundary exists only in 
+\fig\ref{fig:smooth_merging}a but not in
+\figs\ref{fig:smooth_merging}b,
+\ref{fig:smooth_merging}c, or \ref{fig:smooth_merging}d.
 
 
 \begin{figure}[tb]
@@ -407,7 +407,7 @@ the common boundary exists only in \fig\ref{fig:smooth_merging}a but not in
 \vspace{6mm}
 %
 \centering
-\includegraphics[scale=0.15]{smooth_merging_ssc}
+\includegraphics[page=2, scale=0.3]{smooth_merging}
 \caption{The space-scale cube for the merging 
     of \fig\ref{fig:smooth_merging}.
     This figure is made by visualizing the content of an obj file in 
@@ -416,10 +416,8 @@ the common boundary exists only in \fig\ref{fig:smooth_merging}a but not in
 \end{figure}
 
 
-
-
 We define an \emph{event} as a single generalization operation, 
-such as merging a small area into a neighbor.
+such as merging an area into a neighbor.
 For example, \fig\ref{fig:event_and_step}b is obtained from 
 \fig\ref{fig:event_and_step}a by processing one merging event,
 where the dashed polygon marks the new area from the merging.
@@ -429,38 +427,37 @@ We define a \emph{step} as
 a set of events happening at the same time.
 For example, 
 \fig\ref{fig:event_and_step}b is obtained from 
-\fig\ref{fig:event_and_step}a by processing a merging step with one event.
+\fig\ref{fig:event_and_step}a by processing a step with one merging event.
 \fig\ref{fig:event_and_step}d is obtained from 
-\fig\ref{fig:event_and_step}c by processing a merging step with two events.
-In our method, a merging step is completely processed 
+\fig\ref{fig:event_and_step}c by processing a step with two merging events.
+In our method, a step is completely processed 
 before the next step takes place (all sequential). 
 
 \begin{figure}[tb]
 \centering
 \includegraphics[page=1]{greedy_algorithm}
-\caption{Illustration of the merging event and the merging step. 
-Each path shows a merging step. 
-A merging step consists of one or more merging events.}
+\caption{Each path shows a step. 
+A step consists of one or more events (generalization operations).}
 \label{fig:event_and_step}
 \end{figure}
 
 
 We require that 
-the land-cover areas involved in different merging events of a step 
+the land-cover areas involved in different merging events of the same step 
 must not be neighbors, 
 which makes the merging events independent from each other.
 There are two benefits of this independency.
 First, it is easy to maintain the topology of the map.
 When a pair of areas have been merged, 
-we must update the common boundaries with the adjacent areas.
+we must update the common boundaries with the surrounding adjacent areas.
 If an adjacent area is involved in another merging event,
-then it is complicated to update the common boundaries 
+then it is complicated to update the adjacent area's boundaries
 for the two merging events.
 Second, users can understand the events more easily 
 than merging several areas into a single one,
 where the latter is a traditional way of merging.
 In order to realize the requirement, 
-we block the neighbors of the areas selected for merging events.
+we block the neighbors of the areas involved in merging events.
 In the following, we show a greedy algorithm 
 to find the merging events for each step.
 
@@ -473,24 +470,28 @@ for a given area.
 There are many ways of defining the most compatible neighbor.
 For example, \citet{Cheng2006} proposed three ways, i.e.,
 the neighbor has the largest size, 
-shares longest boundary with the least important area,
-or is closest to the least important area in land-cover type. 
+shares the longest boundary with the least important area,
+or is has the closest type to the least important area. 
 \citet{Peng2017AStar} proposed that 
-the neighbor should have a close land-cover type
+the most compatible neighbor should have a close land-cover type
 to the least important area
 and the combination of the two areas should be compact;
 they defined the type distance based on a binary tree
-according to the code of each land-cover type.
+according to the codes of the land-cover types.
 We currently consider the most compatible neighbor
-as the one shares the longest common boundary with the smallest area.
+as the one shares the longest common boundary 
+with the least important area,
+and we consider the least important area 
+as the smallest area on the map.
 
-\fig\ref{fig:greedy_framework} shows the framework of our greedy algorithm.
-The process starts with state~$s=0$ and a land-cover map.
-The parallel parameter~$r_\mathrm{parallel} \in [0,1)$ has to be input.
-This parameter specifies the proportion of land-cover areas that
-we expect to merge parallel.
-Expression~$|M_s|$ denotes the number of areas of the map at state~$s$.
-If there are more than one land-cover area ($|M_s|>1$),
+\fig\ref{fig:greedy_framework} shows the flowchart of our greedy algorithm.
+The process starts with state~$s=0$ and a detailed land-cover map, $|M_0|$.
+Parallel parameter~$r_\mathrm{parallel}$ specifies 
+the proportion of land-cover areas that
+we expect to merge parallelly.
+Apparently, there holds~$r_\mathrm{parallel} \in [0,1)$.
+Expression~$|M_s|$ denotes the number of land-cover areas of the map at state~$s$.
+If there are more than one area ($|M_s|>1$),
 then we can start to find merging events.
 We first compute the number of areas that we expect to merge by
 \begin{equation}
@@ -498,13 +499,14 @@ We first compute the number of areas that we expect to merge by
 n_\mathrm{expect} =
 \lceil r_\mathrm{parallel} \cdot |M_s| \rceil,
 \end{equation}
-where the ceiling function is used so that 
-there holds~$n_\mathrm{expect}\ge 1$.
-However, we cannot always merge~$n_\mathrm{expect}$ areas
+where the ceiling function guarantees~$n_\mathrm{expect}\ge 1$.
+That is to say, we need to find at least one event for each step.
+When~$n_\mathrm{expect} > 1$, however,
+we cannot always find~$n_\mathrm{expect}$ events
 because some areas may be blocked as explained before
 (also see \fig\ref{fig:blocked_polygons}).
-Therefore, variable~$n_\mathrm{event}$ is used
-to represent the number of events that we have found. 
+Therefore, we use variable~$n_\mathrm{event}$
+to represent the number of events that can really happen in the step. 
 
 
 \begin{figure}[tb]
@@ -519,48 +521,55 @@ to represent the number of events that we have found.
 \begin{figure}[tb]
 \centering
 \includegraphics[]{blocked_polygons}
-\caption{(a) From all the free areas,
-	the least important one is selected to merge into
-	its most compatible neighbor (the arrow indicates the merging).
+\caption{The process of finding parallel merging events for a step.
+    (a) From all the free areas,
+	the least important one (the smallest one) is selected to merge into
+	its most compatible neighbor (the one shares the longest common boundary).
+    The arrow indicates the merging.
 	Then the surrounding areas are blocked (marked by the cross).
-	(b) In order to find parallel merging events, 
-	the least important area from the remaining free areas
+    Note that the area shares only a vertex with the least important area 
+    does not need to be blocked.
+	(b) Next, the least important area from the remaining free areas
 	is selected to merge with the most compatible neighbor
 	(the arrow indicates the merging),
-	and the surrounding areas are blocked.
+	and the surrounding areas are also blocked.
 }
 \label{fig:blocked_polygons}
 \end{figure}
 
 If we have not found $n_\mathrm{expect}$ events 
+($n_\mathrm{event} < n_\mathrm{expect}$)
 and there are still free areas,
-then the least important area~$a_\mathrm{least}$ is selected
-from the set of free areas.
+then we go on looking for merging events.
 An area is \emph{free} if 
 it is not involved in an event and is not blocked.
-Then the most compatible neighbor~$a_\mathrm{nbr}$ 
-of~$a_\mathrm{least}$ is found.
+We select the least important area~$a_\mathrm{least}$
+from the set of free areas.
+We also obtain $a_\mathrm{least}$'s 
+most compatible neighbor~$a_\mathrm{nbr}$.
 If area~$a_\mathrm{nbr}$ is also free, 
-then we form an event for areas~$a_\mathrm{least}$ and~$a_\mathrm{nbr}$,
-and increase variable~$n_\mathrm{event}$ by 1.
-We also block other neighbors of $a_\mathrm{least}$ and $a_\mathrm{nbr}$
+we define an event of areas~$a_\mathrm{least}$ and~$a_\mathrm{nbr}$,
+and increase the number of events, $n_\mathrm{event}$, by 1.
+We also block the surrounding neighbors of $a_\mathrm{least}$ and $a_\mathrm{nbr}$
 (see \fig\ref{fig:blocked_polygons}a).
 Then, we continue to find more merging events
 (see \fig\ref{fig:blocked_polygons}b).
 If area~$a_\mathrm{nbr}$ is not free,
-we block $a_\mathrm{least}$ for now
-so that $a_\mathrm{least}$ and $a_\mathrm{nbr}$ 
+then it must be blocked because of the previously found events.
+In this case, we block $a_\mathrm{least}$ for now
+so that areas~$a_\mathrm{least}$ and~$a_\mathrm{nbr}$ 
 may merge in the next step.
 
 If we have found $n_\mathrm{expect}$ events 
 or there is no free area anymore,
 then finding merging events of the step finishes.
-Consequently, we parallelly merge all the pairs of areas for the events,
+We parallelly merge all the pairs of areas of the events,
 free all the blocked areas,
 increase state~$s$ by value~$n_\mathrm{event}$,
-and create map~$M_s$ of the new areas and the freed areas.
+and create map~$M_s$ based on the new areas and the freed areas.
 Then, finding merging events for the next step starts.
-This finding completes until there is only one area left on the map.
+This interation of finding completes 
+until there is only one area left on the map ($|M_s|=1$).
 The merging events will be stored as records in tGAP tables
 \citep[see][\p159]{Meijers2011Thesis}.
 \fig\ref{fig:sequence_greedy} shows a sequence of merging steps
@@ -570,8 +579,8 @@ obtained by our greedy algorithm.
 \centering
 \includegraphics[page=2]{blocked_polygons}
 \caption{A sequence of merging steps obtained by our greedy algorithm,
-	where parallel parameter~$r_\mathrm{parallel}$ is set to $0.3$.
-	Each arrow in a subfigure indicates a merging event.
+	where parallel parameter~$r_\mathrm{parallel}$ is set to~$0.3$.
+	The arrows in the subfigures indicate merging events.
 }
 \label{fig:sequence_greedy}
 \end{figure}
@@ -581,9 +590,9 @@ obtained by our greedy algorithm.
 
 \subsection{Integrating the parallel events into the tGAP}
 
-\citet[\p159]{Meijers2011Thesis} designed tables 
+\citet[\p159]{Meijers2011Thesis} designed three tables 
 to record the information of
-faces, edges, and face hierarchy, 
+faces, edges, and face hierarchies, 
 which together form a tGAP.
 Take the face table as an example,
 it contains columns \emph{face\_id}, 
@@ -597,12 +606,12 @@ That is, a face should appear
 when the merging arrives at the state\_start value,
 and the face should disappear
 when the merging arrives at the state\_end value.
-When switching from single-event merging 
+Comparing between single-event merging 
 (sequence~I of \fig\ref{fig:face_tgap})
-to parallel merging (sequence~II of \fig\ref{fig:face_tgap}),
+and parallel-event merging (sequence~II of \fig\ref{fig:face_tgap}),
 we observe that the state\_end values of faces~1 and~2 are changed from~1 to~2
 (see \tbl\ref{tbl:face_tgap_parallel}, the new values are underlined).
-Also, the state\_start value of faces~6 is changed from~1 to~2
+Also, the state\_start value of face~6 is changed from~1 to~2
 (see \tbl\ref{tbl:face_tgap_parallel}).
 The columns and records of both the edge table and the face-hierarchy table 
 will be changed accordingly.
@@ -616,38 +625,43 @@ This information is necessary for building the SSC.
 A simple way is to add a column, say, \emph{state\_expand} 
 into the face table during generating the tGAP.
 Then, the time of starting expansion can be recorded into the column.
-However, we would like to keep as few columns as possible
+However, we would like to avoid unnecessary columns
 so that the table is easy to read.
 As a result, we compute state\_expand values on the fly 
 when building the SSC.
 
-By definition, parallel events of a merging step happen at the same time.
-In other words, the faces involved in those parallel events have 
+By definition, the parallel events of a merging step happen at the same time.
+In other words, the areas involved in those parallel events have 
 the same state\_expand value ($s_\mathrm{expand}$) and 
-the same state\_end value ($s_\mathrm{high}$).
+the same state\_end value ($s_\mathrm{end}$).
 The reverse is also true.
-If some faces have the same state\_end value,
-then the faces are involved in the parallel events of the same step.
-The reason is that the mergings of these faces will finish at $s_\mathrm{high}$,
+If some areas have the same state\_end value,
+then the areas are involved in the parallel events of the same step.
+The reason is that the mergings of these areas will finish at $s_\mathrm{end}$,
 and no merging will start earlier or later than $s_\mathrm{expand}$
-because we required that the next step starts only when the current step stops.
-As an event involves two faces,
+because we required that the next step starts only when a step stops.
+As an event involves two areas,
 the number of events finishing at state~$s_\mathrm{end}$ can be calculated by
 \begin{equation}
 \label{eq:n_event_state}
 n_\mathrm{event} (s_\mathrm{end}) = 
 \frac{\sum\limits_{s \in S_\mathrm{end}} [s=s_\mathrm{end}]}{2},
 \end{equation}
-where notation~$S_\mathrm{end}$ denotes the set of state\_end values,
+where notation~$S_\mathrm{end}$ denotes the set of state\_end values
+recorded in column state\_end,
 and expression~$[s=s_\mathrm{end}]$ returns~$1$ if the two values are equal 
 and returns~$0$ otherwise.
-The state to start the merging animation is
+When the $n_\mathrm{event}$ events take place parallelly, 
+they can share the total time of the events happening sequentially.
+In other words, each event has more time to take place 
+if there are more events happen parallelly.
+The state of starting the merging animations of all the events is
 \begin{equation}
 \label{eq:s_expand_state}
 s_\mathrm{expand} (s_\mathrm{end}) = s_\mathrm{end} - n_\mathrm{event} (s_\mathrm{end}).
 \end{equation}
 Take the values in \tbl\ref{tbl:face_tgap_parallel} for example,
-we have~$S_\mathrm{high} = \{2, 2, 3, 2, 2, 4, 3, 4, 5\}$, 
+we have~$S_\mathrm{end} = \{2, 2, 3, 2, 2, 4, 3, 4, 5\}$, 
 $n_\mathrm{event} (2) = 2$, and~$s_\mathrm{expand} (2) = 0$.
 Therefore, the merging expansions of faces~1, 2, 4, and 5 
 should take place from state~$0$ to state~$2$,
@@ -660,8 +674,7 @@ and the the expansion of faces 3 and 4
 takes place from state~$1$ to state~$2$
 (see the tilted face above the pink face on the right-hand side of \fig\ref{fig:ssc_single}).
 As a result, the expansion duration of faces 1 and 2 of sequence~II
-is twice as that of sequence~II;
-the animation with parallel events is easier for a map user to perceive. 
+is twice as that of sequence~II. 
 
 
 %According to \tbl\ref{tbl:face_tgap}, 
@@ -677,7 +690,7 @@ the animation with parallel events is easier for a map user to perceive.
 
 \begin{figure}[tb]
 \centering
-\includegraphics[page=3]{greedy_algorithm}
+\includegraphics[page=1]{single_parallel_comparison}
 \caption{Merging one pair of areas in each step (sequence~I), 
     and merging two pairs of areas parallelly (sequence~II).}
 \label{fig:face_tgap}
@@ -731,7 +744,7 @@ face\_id &   state\_start & state\_end    \\ \hline
 \captionsetup*{type=figure} %*: suppress warning "The caption type was already set to figure"
 \parbox{.49\linewidth}{
 \centering
-\includegraphics[width=0.8\linewidth]{top10nl_9x9_5_single}
+\includegraphics[page=2,width=0.8\linewidth]{single_parallel_comparison}
 \vspace{3mm} %for some reason, the space above the caption is not enough
 \caption{The SSC of merging sequence~I, 
     shown in \fig\ref{fig:face_tgap}.}
@@ -740,7 +753,7 @@ face\_id &   state\_start & state\_end    \\ \hline
 %\hfill
 \parbox{.49\linewidth}{
 \centering
-\includegraphics[width=0.8\linewidth]{top10nl_9x9_5_parallel}
+\includegraphics[page=3,width=0.8\linewidth]{single_parallel_comparison}
 \vspace{3mm} %for some reason, the space above the caption is not enough
 \caption{The SSC of merging sequence~II, 
     shown in \fig\ref{fig:face_tgap}.}
@@ -758,7 +771,7 @@ For a zooming action
 (that is, slicing the SSC with a horizontal plane), 
 we always snap the map to an existing state
 so that users will not see a merging operation stops half-way
-and will not see transition artifact (such as slivers or blended colors).
+and will not see transition artifact (such as slivers).
 Take \fig\ref{fig:smooth_merging} for example, 
 the merging animation should stop at 
 either \ref{fig:smooth_merging}a or \ref{fig:smooth_merging}e,
@@ -768,8 +781,8 @@ Moreover, some states do not exist because of the parallel events.
 Such a case can be found in sequence~II of \fig\ref{fig:face_tgap},
 where state~$1$ does not exist.
 In this case, the merging animation should not stop at state~$1$.
-In order to snap to existing state, 
-we compress the information of merging events into 
+In order to snap to existing states, 
+we compress the information of merging events and save it into 
 a JSON file (JavaScript Object Notation File).
 Then, the JSON file will be sent to the client side and uncompressed.
 
@@ -780,21 +793,21 @@ Then, the JSON file will be sent to the client side and uncompressed.
 On the server side, we compute the values shown in \tbl\ref{tbl:sequence_greedy}.
 \tbl\ref{tbl:sequence_greedy} is based on the merging steps of
 \fig\ref{fig:sequence_greedy},
-where parallel parameter~$r_\mathrm{parallel} = 0.3$ is used.
+where parallel parameter~$r_\mathrm{parallel}$ is set to~$0.3$.
 The computation starts from step~$1$.
-At the beginning, there are $7$ areas on the map, \ie$M_0$.
+At the beginning, there are $7$ areas on the map, \ie$|M_0| = 7$.
 According to \eq\ref{eq:n_expect},
 we expect to parallel three events ($n_{\mathrm{expect},1} = 3$).
-However, only two event can be paralleled at step~$1$ of
-\fig\ref{fig:sequence_greedy}.
+However, only two event can be paralleled in step~$1$ 
+according to the situation of \fig\ref{fig:sequence_greedy}.
 Therefore, we have~$n_{\mathrm{event},1} = 2$.
-Then, the difference of the expected value and the real value
+The difference of the expected value and the real value
 can be computed by
 \begin{equation}
 \label{eq:n_diff}
 n_{\mathrm{diff},i} = n_{\mathrm{expect},i} - n_{\mathrm{event},i}.
 \end{equation}
-That is, we have~$n_{\mathrm{diff},1}=1$ for step~$1$
+That is, we have~$n_{\mathrm{diff},1}=1$, for step~$1$
 (also see the $n_\mathrm{diff}$ value in the first row of \tbl\ref{tbl:sequence_greedy}).
 We require that the starting state is~$s_{\mathrm{start},1} = 0$ for the first step.
 Then, the ending state can be computed by
@@ -873,21 +886,21 @@ As a result, we have all the values of \tbl\ref{tbl:sequence_greedy}.
 Now, we have a column of $n_\mathrm{diff}$ values.
 We compress those values as the form of 
 $$
-[[n_{\mathrm{diff},1},j_1], [n_{\mathrm{diff},j_1},j_2], \ldots, 
+[[n_{\mathrm{diff},1},j_1], [n_{\mathrm{diff},1+j_1},j_2], \ldots, 
 [n_{\mathrm{diff},i},j_k], [n_{\mathrm{diff},i+j_k},j_{k+1}], \ldots],
 $$
 where variable~$j_k$ is the number of the same $n_\mathrm{diff}$ values in a row 
 starting at step~$i$.
 Take the values of \tbl\ref{tbl:sequence_greedy} for example, 
-$j_0$ is~$3$ 
+$j_1$ is~$3$ 
 because the first three~$n_\mathrm{diff}$ values are the same (\ie1),
-and $j_1$ is~$2$ 
+and~$j_2$ is~$2$ 
 because the following two~$n_\mathrm{diff}$ values are the same (\ie0). 
 According to our strategy, 
-the $n_\mathrm{diff}$ values of \tbl\ref{tbl:sequence_greedy}
-will be compressed to $[[1,3], [0,2]]$,
+the~$n_\mathrm{diff}$ values of \tbl\ref{tbl:sequence_greedy}
+will be compressed to~$[[1,3], [0,2]]$,
 where each pair of values in the inner square brackets 
-represent the event number and the repeat times.
+record an~$n_\mathrm{diff}$ value and the number of repeat times.
 The content of the JSON file is as following.
 \begin{verbatim}
                 {
@@ -916,7 +929,7 @@ we can again compute~$n_{\mathrm{expect},i}$ according to \eq\ref{eq:n_expect},
 where parallel parameter~$r_\mathrm{parallel}=0.3$ 
 and face number~$n_{\mathrm{area},1} = 7$
 can be obtained also from the JSON file.
-Then, we can computer the actual number of parallel events by
+Then, we can compute the actual number of parallel events by
 \begin{equation*}
 \label{eq:n_event_step}
 n_{\mathrm{event},i} = n_{\mathrm{expect},i} - n_{\mathrm{diff},i},
@@ -940,15 +953,14 @@ the number of merging events that should be processed can be computed by
 E_t = N_b \left(1-\frac{S^2_b}{S^2_t}\right),
 \end{equation}
 where parameter~$S_b$ is the scale denominator of the base map,
-and parameter~$N_b = |M_0|$ is the number of areas on the base map.
+and parameter~$N_b = |M_0|$ is the number of land-cover areas on the base map.
 In our example regarding to list~$L_\mathrm{event}$,
 if event number~$E_t \le 0$, the base map should be presented;
 if $E_t \ge 6$, the last value of list~$L_\mathrm{event}$,
-the map with all the merging events having been processed
-should be presented.
+the map with the final single area should be presented.
 Otherwise, if $0<E_t < 6$, we snap event number~$E_t$ 
 to the closest value in list~$L_\mathrm{event}$,
-which is marked by~$E_{t,\mathrm{snap}}$.
+which is denoted by~$E_{t,\mathrm{snap}}$.
 The scale denominator corresponding to event number~$E_{t,\mathrm{snap}}$
 can be computed by 
 \begin{equation}
@@ -968,6 +980,25 @@ which is at scale~$1:S_{t,\mathrm{snap}}$.
 \label{sec:case_study}
 
 
+We have employed the ``Eater'' of \citet{Suba2014Merge},
+implemented in Python, 
+to generate the elements
+(vertices, triangulated faces, and boundaries)
+of the SSC \citep{vanOosterom2014tGAPSSC} 
+and saved these elements in an OBJ file\footnote{%
+Wavefront .obj file:
+\url{https://en.wikipedia.org/wiki/Wavefront_.obj_file},
+accessed: Jan 14, 2020.}.
+%
+The OBJ file and the JSON file (described in \sect\ref{sec:snap_server}) 
+will be sent to the client 
+when a user visits our website to access the map.
+On the client side,
+the two files are processed
+by a prototype implemented in JavaScript.
+The processed content and some code for WebGL (Web Graphics Library)
+are submitted to GPU to display the map of smooth zoom.
+
 The dataset used in this case study is a subset of TOP10NL\footnote{%
 More information about TOP10NL can be found at
 \url{https://zakelijk.kadaster.nl/-/topnl},
@@ -981,7 +1012,7 @@ accessed: Jan 15, 2020.}.
 %
 Because the base scale is $1:10{,}000$, 
 we have~$S_b = 10{,}000$ for \eq\ref{eq:S_t_snap}.
-The maximum value of event number~$E_{t,\mathrm{snap}}$ is~$13{,}237$
+The maximum value for event number~$E_{t,\mathrm{snap}}$ is~$13{,}237$
 as there are in total~$13{,}238$ areas.
 When we zoom out far enough 
 so that~$E_{t,\mathrm{snap}}$ reaches its maximum value,
@@ -989,14 +1020,13 @@ the scale denominator will arrive at~$1{,}150{,}565$
 according to \eq\ref{eq:S_t_snap}.
 At that moment, all the areas are merged into one single area
 (see \figs\ref{fig:data}b).
-In each step, we want to parallelly merge some portion of the areas.
+In each step, we want to parallelly merge some proportion of the areas.
 We tried three cases: 0.1\%, 1\%, and 10\%.
-The three version of maps can be browsed online at\footnote{%
-\url{http://}}
 That is, parallel parameter~$r_\mathrm{parallel}=0.001, 0.01, \text{and~} 0.1$ 
-(see \sect\ref{sec:greedy_algo}).
-Some statistics of the results are shown in 
-\tbl\ref{tbl:parallel_param_comparison}.
+(see \sect\ref{sec:greedy_algo}).The three versions can be browsed online\footnote{%
+\url{http://}}.
+In addition, the version of single-event step is also available online.
+
 
 \begin{figure}[tb]
 \centering
@@ -1007,9 +1037,50 @@ Some statistics of the results are shown in
 \end{figure}
 
 
+
+
+
+In the following, we show some results for the case of 
+parallel parameter~$r_\mathrm{parallel}= 0.01$.
+The content of the JSON file is 
+\begin{verbatim}
+                {
+                    "face_num": 13238,
+                    "parallel_param": 0.01,                    
+                    "eventdiff_repetition": [[0, 544]]
+                }
+\end{verbatim}
+According to entry ``eventdiff\_repetition'',
+there are~$544$ steps in total, 
+which can be computed by summing up the second values in all the inner brackets.
+There is only one pair of inner brackets 
+when parallel parameter~$r_\mathrm{parallel}= 0.01$,
+but there are many pairs when~$r_\mathrm{parallel}= 0.1$ 
+(see $L_\mathrm{diff\_rep}$ in \tbl\ref{tbl:parallel_param_comparison}).
+%
+As explained in \sect\ref{sec:greedy_algo}, 
+for each merging step we iteratively select the least important area 
+and its most compatible neighbor to define a merging event; 
+then, we block the neighbors of the two areas.
+Sometimes, a least important area is already blocked 
+because of the previously found events.
+This situation happens~$3{,}216$ times in total for all the steps
+(see column~$n_\mathrm{blocked}$ of \tbl\ref{tbl:parallel_param_comparison}).
+%
+Sometimes, although a least important area is free, 
+its most compatible neighbor has been blocked 
+because of the previously found events.
+This case happens~$1{,}841$ times in total for all the steps
+(see column~$n_\mathrm{nbr\_blocked}$ of \tbl\ref{tbl:parallel_param_comparison}).
+%
+More statistics of the results when 
+parallel parameter~$r_\mathrm{parallel}=0.001$, $0.01$, or $0.1$ 
+are shown in \tbl\ref{tbl:parallel_param_comparison}.
+
 \begin{table}[tb]
 \centering
-\caption{pass}
+\caption{The statistics when different parallel parameters area used 
+(\ie$r_\mathrm{parallel}=0.001$, $0.01$, or $0.1$).}
 \begin{tabular}{rrrr}
 \hline
 $r_\mathrm{parallel}$   & $L_\mathrm{diff\_rep}$        & $n_\mathrm{blocked}$  & $n_\mathrm{nbr\_blocked}$ \\ \hline
@@ -1046,61 +1117,41 @@ $L_{\mathrm{diff\_rep},0.1}$ = [[51, 1], [138, 1], [152, 1], [200, 1], [205, 1],
 \label{tbl:parallel_param_comparison}
 \end{table}
 
-We have employed the ``Eater'' of \citet{Suba2014Merge},
-implemented in Python, 
-to generate the elements
-(vertices, triangulated faces, and boundaries)
-of the SSC \citep{vanOosterom2014tGAPSSC} 
-and saved these elements in an OBJ file\footnote{%
-Wavefront .obj file:
-\url{https://en.wikipedia.org/wiki/Wavefront_.obj_file},
-accessed: Jan 14, 2020.}.
-%
-The OBJ file and the JSON file (described in \sect\ref{sec:snap_server}) 
-will be sent to the client 
-when a user visits our website to access the map.
-On the client side,
-the two files are processed
-by a prototype implemented in JavaScript.
-The processed content and some code for WebGL (Web Graphics Library)
-are submitted to GPU to display the map of smooth zoom.
+When zooming on our web maps with different parallel parameters,
+we observed that the impressions of the maps based on single-event merging
+and based on parallel parameter~$r_\mathrm{parallel}= 0.001$ are almost the same.
+The reason is that the smooth merging happens too fast,
+and we cannot really see the animation of the expansion.
+We get the feeling of smooth merging when~$r_\mathrm{parallel}= 0.01$.
+when~$r_\mathrm{parallel}= 0.1$, the smooth merging is already obvious.
+Of course, the animation speed also depends on how much we want to zoom
+when we scroll the mouse wheel (zoom factor) 
+and depends on the specified animation duration (zoom animation);
+see \fig\ref{fig:interaction_settings}.
 
+\begin{figure}[tb]
+\centering
+\includegraphics[page=1,width=0.8\textwidth]{case_study}
+\caption{Our panel of settings. 
+Among others, one can set how much to zoom when scrolling the mouse wheel 
+and set the animation duration of the zooming.}
+\label{fig:interaction_settings}
+\end{figure}
 
-In the following, we show some results for the case of 
-parallel parameter~$r_\mathrm{parallel}= 0.01$.
-The content of the JSON file is 
-\begin{verbatim}
-                {
-                    "face_num": 13238,
-                    "parallel_param": 0.01,                    
-                    "eventdiff_repetition": [[0, 544]]
-                }
-\end{verbatim}
-According to entry ``eventdiff\_repetition'',
-there are~$544$ steps in total, 
-which can be computed by summing up the second values 
-of all the pairs of inner brackets.
-There is only one pair of inner brackets when $r_\mathrm{parallel}= 0.01$,
-but there are many pairs when $r_\mathrm{parallel}= 0.1$ 
-(see $L_\mathrm{diff\_rep}$ in \tbl\ref{tbl:parallel_param_comparison}).
-%
-As explained in \sect\ref{sec:greedy_algo}, 
-for each merging step we iteratively select the least important area 
-and its most compatible neighbor to form a merging event; 
-then, we block the neighbors of the two areas.
-Sometimes, a least important area is already blocked 
-because of the previously found events.
-This situation happens~$3{,}216$ times in total for all the steps.
-%
-Sometimes, although a least important area is free, 
-its most compatible neighbor has been blocked 
-because of the previously found events.
-This case happens~$1{,}841$ times in total for all the steps.
-%
-
-
-
-
+When parallel parameter~$r_\mathrm{parallel}$ is set to~$0.1$,
+we notice a problem in the northeast corner of the map.
+That is, some small areas stays until the scale is very small
+while they should be merged much earlier.
+This is due to the fact that 
+there are many buildings in the northeast corner of the map.
+When the buildings share the same surrounding area,
+they become holes of the polygon.
+In each step, only one of the buildings will be merged into the surrounding area
+because an area is allowed to merge with only one area in each step.
+In the meantime, the areas at other places of the map merge relatively fast
+because we allow $10\%$ of the areas to be merged in each step.
+To fix the problem, we should allow a surrounding area 
+to merge with many of its holes in a single step.
 
 
 
@@ -1180,7 +1231,7 @@ shown in \fig\ref{fig:smooth_merging_future}.
 
 \begin{figure}[tb]
 \centering
-\includegraphics[page=2]{smooth_merging}
+\includegraphics[page=3]{smooth_merging}
 \caption{A smooth way of merging two areas.
     The larger area expands over the smaller one.
     At the same time, 
