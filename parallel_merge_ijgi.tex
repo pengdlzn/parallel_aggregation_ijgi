@@ -270,29 +270,31 @@ merges it into the most compatible neighbor.
 The importance of an area is defined 
 based on both the size and the type of the area.
 The compatibility between a pair of areas is defined based on 
-both the length of the common boundary and the similarity of the types 
-of the pair of areas. 
+both the length of the common boundary and the type similarity
+of the two areas. 
 \citet[\chap2]{Peng2019Thesis} tried to find an optimal sequence 
 to merge land-cover areas
 based on the \Astar algorithm or an integer linear program.
 A comparison to a greedy algorithm showed that 
 the \Astar algorithm improves the quality of the merging sequences
 in the sense of the type changes and the compactnesses of the areas.
-\citet{vanOosterom2014Support} pointed out that sequentially merging
-land-cover areas may result in a suboptimal smooth-zoom effect.
-To provide better visualization, they suggested that
-the merging operations should be paralleled.
+\citet{vanOosterom2014Support} pointed out that 
+sequentially processing generalization operations 
+may result in a suboptimal smooth-zoom effect.
+So, they suggested that
+the generalization operations should be paralleled.
 Then, one question is how many operations 
 should be paralleled for a given scale.
 \citet{Thiemann2018LandCover} proposed a chain of operators 
 to generalize a land-cover map.
-In the chain of processing land-cover polygons, 
+In the chain of processing land-cover areas, 
 they integrated cleaning, dissolving, splitting, aggregating, reclassifying, and simplifying. 
 
 \citet{vanOosterom2014Support} explained the concept of the space-scale cube (SSC).
 At the bottom of the SSC is a detailed land-cover map.
 All the land-cover areas extrude along the $z$-axis.
-That is, an area on map becomes a polyhedron in the SSC.
+In the SSC, an area on map becomes a polyhedron, and
+the common boundary of two areas is a vertical wall.
 Whenever a generalization operation happens, 
 the extrusions of the involved areas stop;
 then, the newly generated areas take the place and start to extrude.
@@ -301,9 +303,7 @@ with a horizontal plane.
 Furthermore, they represented the smooth tGAP in the SSC.
 A typical example of the smooth generalization operation is that 
 an area merges another one by gradually expanding over it.
-The common boundary of the two areas is a vertical wall 
-for the normal tGAP in the SSC.
-While in the SSC for the smooth tGAP, 
+In the SSC for the smooth tGAP, 
 the wall starts to tilt when the expansion begins.
 Based on the SSC, \citet{Meijers2020Web} explained the principles of 
 implementing a web map of land-cover areas.
@@ -316,26 +316,12 @@ using the GPU at the client side.
 In addition to slicing the SSC with a horizontal plane,
 they could also slice the SSC with a curly surface 
 to output a map with mixed scales.
-\citet{Suba2014Merge} proposed three methods 
+To build the SSC, \citet{Suba2014Merge} proposed three methods 
 to merge a pair of areas in a gradual manner, 
 which are the ``Single flat plane'', the ``Zipper'', and the ``Eater''.
 Basically, the \emph{winner} gradually expands over the \emph{loser}.
 We will use the ``Eater'' because it works for all kinds of polygons 
-while the other two methods have limitation 
-in terms of the type of a polygon.
-For example, the two other methods do not work for some concave polygons.
-\citet{Suba2016Road} continuously generalized a planar map of road network.
-In each step, they process the least important face.
-Taking into account the condition of the face,
-they put it back with higher importance, collapse it, 
-or merge it into an adjacent face.
-In addition to the generalization, 
-they also observed the number of faces,
-the area of faces, the number of road faces, the number of road edges,
-and the number of operations (merge and split) 
-when the scale of the map is decreasing.
-These statistics can be good indications 
-for (continuous) map generalization.
+while the other two methods have limitations for some special cases.
 \citet{Huang2016Webmap} pointed out that
 the effort of implementing online maps 
 had been spent mainly on preparing data on the server side.
@@ -344,7 +330,20 @@ between the server side and the client side.
 They proposed different strategies of assigning 
 the work of handling map data
 according to the machine abilities of the clients.
+For example, the two other methods do not work for some concave polygons.
 
+\citet{Suba2016Road} continuously generalized a planar map of road network.
+In each step, they process the least important face.
+Taking into account the condition of the face,
+they may put it back with higher importance, collapse it, 
+or merge it into an adjacent face.
+In addition to the generalization, 
+they also made statistics of the number of faces,
+the area of faces, the number of road faces, the number of road edges,
+and the number of operations (merge and split) 
+when the scale of the map is decreasing.
+These statistics can be good indications 
+for (continuous) map generalization.
 \citet{Huang2017Matrix} utilized a matrix to guide 
 both pruning rivers and removing vertices for a river network, 
 where the rows and the columns respectively represent
@@ -352,7 +351,7 @@ the rivers and the vertices.
 According to the matrix, 
 they were able to decide which rivers and vertices 
 should be remained for a given scale.
-To this purpose, they proposed a method 
+To that purpose, they proposed a method 
 to compute how many rivers and vertices 
 should be kept according to that given scale.
 
@@ -360,8 +359,6 @@ should be kept according to that given scale.
 
 
 
-
-%\citet{Thiemann2018LandCover}
 %\citet{Dumont2020MultiScale}
 %\citet{Meijers2015Parallel}
 
