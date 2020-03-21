@@ -962,7 +962,7 @@ if event number~$E_t \le 0$, the base map should be presented;
 if $E_t \ge 6$, the last value of list~$L_\mathrm{event}$,
 the map with the final single area should be presented.
 Otherwise, if $0<E_t < 6$, we snap event number~$E_t$ 
-to the closest value in list~$L_\mathrm{event}$,
+to the closest value (measured in events) of list~$L_\mathrm{event}$,
 which is denoted by~$E_{t,\mathrm{snap}}$.
 The scale denominator corresponding to event number~$E_{t,\mathrm{snap}}$
 can be computed by 
@@ -1002,7 +1002,8 @@ by a prototype implemented in JavaScript.
 The processed content and some code for WebGL (Web Graphics Library)
 are submitted to GPU to display the map of smooth zoom.
 
-The dataset used in this case study is a subset of TOP10NL\footnote{%
+The dataset used in this case study is a topographic map, 
+a subset of TOP10NL\footnote{%
 More information about TOP10NL can be found at
 \url{https://zakelijk.kadaster.nl/-/topnl},
 accessed: Jan 14, 2020.},
@@ -1034,8 +1035,8 @@ In addition, the version of single-event step is also available online.
 \begin{figure}[tb]
 \centering
 \includegraphics[page=1]{data}
-\caption{The dataset represents the place 
-    to the southeast of Maastricht, Limburg, The Netherlands.}
+\caption{The topographic map represents the place 
+    in the south of Limburg, The Netherlands.}
 \label{fig:data}
 \end{figure}
 
@@ -1192,7 +1193,8 @@ shown in \fig\ref{fig:smooth_merging_future}.
 \begin{figure}[tb]
 \centering
 \includegraphics[page=3]{smooth_merging}
-\caption{A smooth way of merging two areas.
+\caption{A smooth way of merging two areas, 
+    which we would like to achieve in future.
     The larger area expands over the smaller one.
     At the same time, 
     the smaller area gradually adapt to the color of the larger one,
@@ -1215,6 +1217,10 @@ which are difficult for us to follow;
 for another time duration, there may be no event happening in the screen at all.
 A good strategy is to evenly distribute the merging events for each step, 
 then the workload for us to follow the events is stable during the zooming.
+To this end, we could divide a map into many regions using road network.
+Then, we could find a certain number of events in each of the regions according to
+the regions' sizes.
+
 
 Our current event consists of only the merging operation,
 it is also necessary to involve split operation
