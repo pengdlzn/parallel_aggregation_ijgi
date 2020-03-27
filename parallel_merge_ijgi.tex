@@ -581,7 +581,8 @@ obtained by our greedy algorithm.
 \includegraphics[page=2]{blocked_polygons}
 \caption{A sequence of merging steps obtained by our greedy algorithm,
 	where parallel parameter~$r_\mathrm{parallel}$ is set to~$0.3$.
-    Note that $\mathrm{state}=1$ does not exist in this merging sequence.
+    Note that~$\mathrm{state}=1$ does not exist in this merging sequence
+    while step number increases by~$1$ each time.
 	The arrows in the subfigures indicate merging events.
 }
 \label{fig:sequence_greedy}
@@ -591,6 +592,7 @@ obtained by our greedy algorithm.
 
 
 \subsection{Integrating the parallel events into the tGAP}
+\label{sec:integrate_tgap}
 
 \citet[\p159]{Meijers2011Thesis} designed three tables 
 to record the information of
@@ -808,8 +810,9 @@ The difference of the expected value and the real value
 can be computed by
 \begin{equation}
 \label{eq:n_diff}
-n_{\mathrm{diff},i} = n_{\mathrm{expect},i} - n_{\mathrm{event},i}.
+n_{\mathrm{diff},i} = n_{\mathrm{expect},i} - n_{\mathrm{event},i},
 \end{equation}
+where variable~$i$ indicates the $i$-th step.
 That is, we have~$n_{\mathrm{diff},1}=1$, for step~$1$
 (also see the $n_\mathrm{diff}$ value in the first row of \tbl\ref{tbl:sequence_greedy}).
 We require that the starting state is~$s_{\mathrm{start},1} = 0$ for the first step.
@@ -982,7 +985,9 @@ which is at scale~$1:S_{t,\mathrm{snap}}$.
 \section{Case Study}
 \label{sec:case_study}
 
-
+We have stored the result of the tGAP 
+as a set of tables (see \sect\ref{sec:integrate_tgap}) 
+in the PostgreSQL database.
 We have employed the ``Eater'' of \citet{Suba2014Merge},
 implemented in Python, 
 to generate the elements
@@ -1028,7 +1033,9 @@ In each step, we want to parallelly merge some proportion of the areas.
 We tried three cases: 0.1\%, 1\%, and 10\%.
 That is, parallel parameter~$r_\mathrm{parallel}=0.001, 0.01, \text{and~} 0.1$ 
 (see \sect\ref{sec:greedy_algo}).The three versions can be browsed online\footnote{%
-\url{http://}}.
+\url{http://}}. 
+\fig\ref{fig:web_map} shows an example of our web map when 
+parallel parameter~$r_\mathrm{parallel}=0.01$.
 In addition, the version of single-event step is also available online.
 
 
@@ -1041,6 +1048,13 @@ In addition, the version of single-event step is also available online.
 \end{figure}
 
 
+\begin{figure}[tb]
+\centering
+\includegraphics[page=1]{case_study}
+\caption{Our web map at scale~$1:102{,}500$,
+    where parallel parameter~$r_\mathrm{parallel}= 0.01$.}
+\label{fig:web_map}
+\end{figure}
 
 
 
@@ -1057,9 +1071,13 @@ The content of the JSON file is
 According to entry ``eventdiff\_repetition'',
 there are~$544$ steps in total, 
 which can be computed by summing up the second values in all the inner brackets.
-There is only one pair of inner brackets 
+There is only one pair of inner brackets in the list
 when parallel parameter~$r_\mathrm{parallel}= 0.01$,
-but there are many pairs when~$r_\mathrm{parallel}= 0.1$ 
+which shows that the compression strategy illustrated in
+\sect\ref{sec:snap} is very efficient.
+However, the strategy is not always that efficient;
+when~$r_\mathrm{parallel}= 0.1$, for example,
+there are many pairs of values in the list
 (see $L_\mathrm{diff\_rep}$ in \tbl\ref{tbl:parallel_param_comparison}).
 %
 As explained in \sect\ref{sec:greedy_algo}, 
@@ -1122,8 +1140,8 @@ $L_{\mathrm{diff\_rep},0.1}$ = [[51, 1], [138, 1], [152, 1], [200, 1], [205, 1],
 \end{table}
 
 When zooming on our web maps with different parallel parameters,
-we observed that the impressions of the maps based on single-event merging
-and based on parallel parameter~$r_\mathrm{parallel}= 0.001$ are almost the same.
+we observed that the impressions of the maps 
+based on single-event merging and based on parallel parameter~$r_\mathrm{parallel}= 0.001$ are almost the same.
 The reason is that the smooth merging happens too fast,
 and we cannot really see the animation of the expansion.
 We get the feeling of smooth merging when~$r_\mathrm{parallel}= 0.01$.
@@ -1133,9 +1151,10 @@ when we scroll the mouse wheel (zoom factor)
 and depends on the specified animation duration (zoom animation);
 see \fig\ref{fig:interaction_settings}.
 
+
 \begin{figure}[tb]
 \centering
-\includegraphics[page=1,width=0.8\textwidth]{case_study}
+\includegraphics[page=2,scale=0.7]{case_study}
 \caption{Our panel of settings. 
 Among others, one can set how much to zoom when scrolling the mouse wheel 
 and set the animation duration of the zooming.}
