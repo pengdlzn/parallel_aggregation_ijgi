@@ -490,7 +490,7 @@ The process starts with state~$s=0$ and a detailed land-cover map, $|M_0|$.
 Parallel parameter~$r_\mathrm{parallel}$ specifies 
 the proportion of land-cover areas that
 we expect to merge parallelly.
-Apparently, there holds~$r_\mathrm{parallel} \in [0,1)$.
+Apparently, there holds~$r_\mathrm{parallel} \in (0,1)$.
 Expression~$|M_s|$ denotes the number of land-cover areas of the map at state~$s$.
 If there are more than one area ($|M_s|>1$),
 then we can start to find merging events.
@@ -951,15 +951,33 @@ we can compute the accumulated number of events~$L_\mathrm{event} =
 which is also the list of existing states
 (see columns~state\_start and state\_end in \tbl\ref{tbl:sequence_greedy}).
 According to how much a user has zoomed,
-a scale, say $1:S_t$, can be computed.
-According to \citet{Huang2016Webmap},
-the number of merging events that should be processed can be computed by
+a scale ($1:S_t$) can be computed.
+%According to \citet{Huang2016Webmap},
+%the number of merging events that should be processed can be computed by
+\citet{Huang2016Webmap} suggested that 
+the density of areas on a screen should be remained for zooming.
+Their suggestion is based on the assumption that 
+the area density of the base map is well designed, which is reasonable.
+We use variable~$A_\mathrm{real}$ to denote the total areal size of 
+all the land-cover areas in reality.
+Then, the size on screen at scale~$S_t$ 
+is~$A_\mathrm{real} \big/ S_t$,
+where~$1:S^2_t$ is the scale that we want to zoom to.
+In order to keep the density, we require
+\begin{equation}
+\label{eq:equal_density}
+\frac{N_b}{A_\mathrm{real} \big/ S^2_b} =
+\frac{N_b-E_t}{A_\mathrm{real} \big/ S^2_t},
+\end{equation}
+where parameter~$N_b = |M_0|$ is the number of land-cover areas on the base map,
+parameter~$S_b$ is the scale denominator of the base map,
+and variable~$E_t$ is the total number of events 
+happening from the base map to the map at scale~$1:S_t$.
+\eq\ref{eq:equal_density} yields
 \begin{equation}
 \label{eq:E_t}
 E_t = N_b \left(1-\frac{S^2_b}{S^2_t}\right),
 \end{equation}
-where parameter~$S_b$ is the scale denominator of the base map,
-and parameter~$N_b = |M_0|$ is the number of land-cover areas on the base map.
 In our example regarding to list~$L_\mathrm{event}$,
 if event number~$E_t \le 0$, the base map should be presented;
 if $E_t \ge 6$, the last value of list~$L_\mathrm{event}$,
@@ -1034,7 +1052,7 @@ We tried three cases: 0.1\%, 1\%, and 10\%.
 That is, parallel parameter~$r_\mathrm{parallel}=0.001, 0.01, \text{and~} 0.1$ 
 (see \sect\ref{sec:greedy_algo}).The three versions can be browsed online\footnote{%
 Our web maps can be found at
-\url{https://pengdlzn.github.io/gpudemo/2020/03/merge/}.}. 
+\url{https://pengdlzn.github.io/webmaps/2020/03/merge/}.}. 
 \fig\ref{fig:web_map} shows an example of our web map when 
 parallel parameter~$r_\mathrm{parallel}=0.01$.
 In addition, the version of single-event step is also available online.
@@ -1099,6 +1117,8 @@ This case happens~$1{,}841$ times in total for all the steps
 More statistics of the results when 
 parallel parameter~$r_\mathrm{parallel}=0.001$, $0.01$, or $0.1$ 
 are shown in \tbl\ref{tbl:parallel_param_comparison}.
+Apparently, when merging a larger proportion of 
+the land-cover areas, we encounter more cases of the areas blocked.
 
 \begin{table}[tb]
 \centering
@@ -1139,6 +1159,12 @@ $L_{\mathrm{diff\_rep},0.1}$ = [[51, 1], [138, 1], [152, 1], [200, 1], [205, 1],
 %\end{Verbatim}
 \label{tbl:parallel_param_comparison}
 \end{table}
+
+
+
+
+
+
 
 When zooming on our web maps with different parallel parameters,
 we observed that the impressions of the maps 
