@@ -12,9 +12,7 @@
 %=================================================================
 % Full title of the paper (Capitalized)
 \Title{Paralleling Generalization Operations to Support Smooth Zooming:
-Case Study of Merging Land-Cover Areas}
-%\Title{Merging land-cover areas parallelly 
-%to support smooth zooming of web maps}
+Case Study of Merging Area Objects}
 
 % Author Orchid ID: enter ID or remove command
 \newcommand{\orcidauthorA}{0000-0001-6848-3545} % Add \orcidA{} behind the author's name
@@ -50,20 +48,24 @@ Delft University of Technology, Delft, The Netherlands}
 % Abstract (Do not insert blank lines, i.e. \\) 
 \abstract{
 %meaning of time.
-Land-cover areas are important features on maps.
+Area objects are important features on maps.
 When users zoom out on digital maps, 
-some land-cover areas become too tiny to be seen, resulting in visual clutters. 
+some area objects become too tiny to be seen, resulting in visual clutters. 
 To avoid this problem, the map needs to be generalized.
-We merge small areas into their neighbors to form larger ones. 
+We merge small and relatively unimportant areas 
+into their neighbors to form larger ones. 
 We define an \emph{event} as a generalization operation, 
-which in our case is merging the least important area into a neighbor 
-(where the neighbor gradually expands over the least important area).
+which in our case is merging the least important area 
+into the most compatible neighbor.
+On our digital map, the event displays as an animation, 
+where the neighbor gradually expands over the least important area.
 However, because of the given sequence 
 in which the events are processed one by one, 
-the map users still experience many small shock changes 
-(because the merging transition time of their zooming out can be short).
-We try to produce smoother changes by paralleling some events.
-We define a \emph{step} as a set of events happening at the same time.
+the time duration of each merging animation can be short.
+As a result, the map users still experience many small shock changes.
+We try to produce map users with smoother experience by paralleling some events.
+We define a \emph{step} as a set of events 
+happening at the same interval of animation time.
 In our method, a step is completely processed 
 before the next step takes place (all sequential). 
 In this way, each event has more time to be observed by users,
@@ -85,7 +87,7 @@ maintaining map consistency over scale transition.
 %%%%
 %%%% Alternative abstract
 %When users zoom out on digital maps, 
-%some land-cover areas become too tiny to be seen, 
+%some area objects become too tiny to be seen, 
 %resulting in visual clutters. 
 %To avoid this problem, 
 %we merge small areas into their neighbors to form larger areas.
@@ -161,18 +163,18 @@ and to transform administrative boundaries
 %Indeed, there are already many algorithms 
 %for continuous map generalization.
 %To adapt them into a web environment still needs a lot of effort.
-%This paper contributes to merging land-cover areas 
+%This paper contributes to merging area objects 
 %in a web environment. 
 
 
-Land-cover areas are important features on maps. 
+Area objects are important features on maps. 
 When users zoom out,
-some land-cover areas become too tiny to be seen,
+some area objects become too tiny to be seen,
 which result in visual clutter.
 The clutter can be avoided by merging those tiny areas 
 with their neighbors.
 For example, \citet{haunert2008f} developed a method based on
-mixed-integer programming to merge land-cover areas
+mixed-integer programming to merge area objects
 for a map at a certain scale.
 However, if zooming is realized by switching between
 some levels of map representations, 
@@ -264,7 +266,7 @@ and present our future work.
 \label{sec:realted_work}
 
 \citet{vanOosterom2005} proposed a greedy algorithm 
-to merge land-cover areas one by one.
+to merge area objects one by one.
 In each iteration, that algorithm takes the least important area and 
 merges it into the most compatible neighbor.
 The importance of an area is defined 
@@ -273,7 +275,7 @@ The compatibility between a pair of areas is defined based on
 both the length of the common boundary and the type similarity
 of the two areas. 
 \citet[\chap2]{Peng2019Thesis} tried to find an optimal sequence 
-to merge land-cover areas
+to merge area objects
 based on the \Astar algorithm or an integer linear program.
 A comparison to a greedy algorithm showed that 
 the \Astar algorithm improves the quality of the merging sequences
@@ -287,12 +289,12 @@ Then, one question is how many operations
 should be paralleled for a given scale.
 \citet{Thiemann2018LandCover} proposed a chain of operators 
 to generalize a land-cover map.
-In the chain of processing land-cover areas, 
+In the chain of processing area objects, 
 they integrated cleaning, dissolving, splitting, aggregating, reclassifying, and simplifying. 
 
 \citet{vanOosterom2014Support} explained the concept of the space-scale cube (SSC).
 At the bottom of the SSC is a detailed land-cover map.
-All the land-cover areas extrude along the $z$-axis.
+All the area objects extrude along the $z$-axis.
 In the SSC, an area on map becomes a polyhedron, and
 the common boundary of two areas is a vertical wall.
 Whenever a generalization operation happens, 
@@ -307,7 +309,7 @@ an area merges another one by gradually expanding over it.
 In the SSC for the smooth tGAP, 
 the wall starts to tilt when the expansion begins.
 Based on the SSC, \citet{Meijers2020Web} explained the principles of 
-implementing a web map of land-cover areas.
+implementing a web map of area objects.
 They showed a protocol to react to a map user's browsing the map.
 They made chunks of the data used to build the SSC
 so that they were able to send only the chunks relevant to the place
@@ -444,7 +446,7 @@ A step consists of one or more events (generalization operations).}
 
 
 We require that 
-the land-cover areas involved in different merging events of the same step 
+the area objects involved in different merging events of the same step 
 must not be neighbors, 
 which makes the merging events independent from each other.
 There are two benefits of this independency.
@@ -488,10 +490,10 @@ as the smallest area on the map.
 \fig\ref{fig:greedy_framework} shows the flowchart of our greedy algorithm.
 The process starts with state~$s=0$ and a detailed land-cover map, $|M_0|$.
 Parallel parameter~$r_\mathrm{parallel}$ specifies 
-the proportion of land-cover areas that
+the proportion of area objects that
 we expect to merge parallelly.
 Apparently, there holds~$r_\mathrm{parallel} \in (0,1)$.
-Expression~$|M_s|$ denotes the number of land-cover areas of the map at state~$s$.
+Expression~$|M_s|$ denotes the number of area objects of the map at state~$s$.
 If there are more than one area ($|M_s|>1$),
 then we can start to find merging events.
 We first compute the number of areas that we expect to merge by
@@ -747,23 +749,21 @@ face\_id &   state\_start & state\_end    \\ \hline
 \vspace{8mm} %make some space
 %
 \captionsetup*{type=figure} %*: suppress warning "The caption type was already set to figure"
-\parbox{.49\linewidth}{
-\centering
-\includegraphics[page=2,width=0.8\linewidth]{single_parallel_comparison}
-\vspace{3mm} %for some reason, the space above the caption is not enough
-\caption{The SSC of the single-event merging steps
-    (sequence~I of \fig\ref{fig:face_tgap}).}
-\label{fig:ssc_single}
-}
-%\hfill
-\parbox{.49\linewidth}{
-\centering
-\includegraphics[page=3,width=0.8\linewidth]{single_parallel_comparison}
-\vspace{3mm} %for some reason, the space above the caption is not enough
-\caption{The SSC of the parallel-event merging steps
-    (sequence~II of \fig\ref{fig:face_tgap}).}
-\label{fig:ssc_parallel}
-}
+%
+\begin{subfigure}[b]{0.49\textwidth}
+ \centering
+ \includegraphics[page=2,width=0.95\linewidth]{single_parallel_comparison}
+ \caption{$y=x$}
+ \label{fig:y equals x}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.49\textwidth}
+ \centering
+ \includegraphics[page=3,width=0.95\linewidth]{single_parallel_comparison}
+ \caption{$y=3sinx$}
+ \label{fig:three sin x}
+\end{subfigure}
+\caption{test.}
 \end{figure}
 
 
@@ -959,7 +959,7 @@ the density of areas on a screen should be remained for zooming.
 Their suggestion is based on the assumption that 
 the area density of the base map is well designed, which is reasonable.
 We use variable~$A_\mathrm{real}$ to denote the total areal size of 
-all the land-cover areas in reality.
+all the area objects in reality.
 Then, the size on screen at scale~$S_t$ 
 is~$A_\mathrm{real} \big/ S_t$,
 where~$1:S^2_t$ is the scale that we want to zoom to.
@@ -969,7 +969,7 @@ In order to keep the density, we require
 \frac{N_b}{A_\mathrm{real} \big/ S^2_b} =
 \frac{N_b-E_t}{A_\mathrm{real} \big/ S^2_t},
 \end{equation}
-where parameter~$N_b = |M_0|$ is the number of land-cover areas on the base map,
+where parameter~$N_b = |M_0|$ is the number of area objects on the base map,
 parameter~$S_b$ is the scale denominator of the base map,
 and variable~$E_t$ is the total number of events 
 happening from the base map to the map at scale~$1:S_t$.
@@ -1024,6 +1024,9 @@ the two files are processed
 by a prototype implemented in JavaScript.
 The processed content and some code for WebGL (Web Graphics Library)
 are submitted to GPU to display the map of smooth zoom.
+
+\textbf{We consider the importance of an area as its size. 
+That is to say the least important area is the smallest area.}
 
 The dataset used in this case study is a topographic map, 
 a subset of TOP10NL\footnote{%
@@ -1118,7 +1121,7 @@ More statistics of the results when
 parallel parameter~$r_\mathrm{parallel}=0.001$, $0.01$, or $0.1$ 
 are shown in \tbl\ref{tbl:parallel_param_comparison}.
 Apparently, when merging a larger proportion of 
-the land-cover areas, we encounter more cases of the areas blocked.
+the area objects, we encounter more cases of the areas blocked.
 
 \begin{table}[tb]
 \centering
@@ -1216,7 +1219,7 @@ to merge with many of its holes in a single step.
 This paper parallels generalization operations,
 using the merging operation as a case study. 
 This paper develops a greedy algorithm to find parallel events of 
-merging land-cover areas.
+merging area objects.
 Then, the parallel events are integrated into 
 the tGAP and the SSC so that the merging animations can be nicely visualized.
 This paper also proposes a strategy 
