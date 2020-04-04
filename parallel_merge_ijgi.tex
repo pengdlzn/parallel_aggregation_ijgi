@@ -171,8 +171,8 @@ Area objects are important features on maps.
 When users zoom out,
 some area objects become too tiny to be seen,
 which result in visual clutter.
-The clutter can be avoided by merging those tiny areas 
-with their neighbors.
+The clutter can be avoided by merging 
+those tiny and relatively unimportant areas with their neighbors.
 For example, \citet{haunert2008f} developed a method based on
 mixed-integer programming to merge area objects
 for a map at a certain scale.
@@ -215,18 +215,18 @@ Each arrow indicates that an area will be merged into another one.
 When users zoom on maps, 
 they do not want to wait for too long to see the desired level.
 On a real map, however, 
-there are way too many changes to apply for the scale transition 
+there are many changes to apply for the scale transition 
 when users are zooming out.
 If the changes are processed one by one 
 (e.g., \fig\ref{fig:intro}c--g),
-then the time interval for each change has to be very short.
+then the animation time interval for each change has to be very short.
 Users may still lose their context 
 because it can be difficult for them to perceive necessary changes.
 For example, a user may get the impression of
 a direct change from \fig\ref{fig:intro}e to \fig\ref{fig:intro}g
 (without the intermediate state of \fig\ref{fig:intro}f)
 even when the three areas on the right-hand side of \fig\ref{fig:intro}e
-are merged gradually.
+are merged gradually as each step is performed very fast.
 To provide users with more gradual impression, 
 we parallel the generalization operations,
 which in this paper are merging operations.
@@ -238,9 +238,9 @@ then each operation has more time to take place
 than the operations are processed one after another.
 Moreover, if the selected operations
 fairly evenly distribute on the whole map, 
-then there may be only a small number of operations 
+then there may be only a limited number of operations 
 happening on the screen.
-Apparently, it is easier for users to follow 
+We assume that it is easier for users to follow 
 when fewer operations take place longer on the screen.
 As for the operations happening outside the screen,
 they can be ignored because 
@@ -265,7 +265,7 @@ and present our future work.
 \section{Related Work}
 \label{sec:realted_work}
 
-\citet{vanOosterom2005} proposed a greedy algorithm 
+\Citet{vanOosterom2005} proposed a greedy algorithm 
 to merge area objects one by one.
 In each iteration, that algorithm takes the least important area and 
 merges it into the most compatible neighbor.
@@ -280,19 +280,19 @@ based on the \Astar algorithm or an integer linear program.
 A comparison to a greedy algorithm showed that 
 the \Astar algorithm improves the quality of the merging sequences
 in the sense of the type changes and the compactnesses of the areas.
-\citet{vanOosterom2014Support} pointed out that 
+\Citet{vanOosterom2014Support} pointed out that 
 sequentially processing generalization operations 
 may result in a suboptimal smooth-zoom effect.
 So, they suggested that
 the generalization operations should be paralleled.
-Then, one question is how many operations 
-should be paralleled for a given scale.
+%Then, one question is how many operations 
+%should be paralleled for a given scale.
 \citet{Thiemann2018LandCover} proposed a chain of operators 
 to generalize a land-cover map.
 In the chain of processing area objects, 
 they integrated cleaning, dissolving, splitting, aggregating, reclassifying, and simplifying. 
 
-\citet{vanOosterom2014Support} explained the concept of the space-scale cube (SSC).
+\Citet{vanOosterom2014Support} explained the concept of the space-scale cube (SSC).
 At the bottom of the SSC is a detailed land-cover map.
 All the area objects extrude along the $z$-axis.
 In the SSC, an area on map becomes a polyhedron, and
