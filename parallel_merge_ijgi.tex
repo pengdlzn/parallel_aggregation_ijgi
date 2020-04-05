@@ -179,7 +179,7 @@ for a map at a certain scale.
 However, if zooming is realized by switching between
 some levels of map representations, 
 large and discrete changes usually happen
-(e.g., from \fig\ref{fig:intro}a to \fig\ref{fig:intro}b), 
+(\eg~from \fig\ref{fig:intro}a to \fig\ref{fig:intro}b), 
 which make users to lose their context.
 To provide small changes for scale transition, 
 \citet{vanOosterom2005} proposed 
@@ -218,7 +218,7 @@ On a real map, however,
 there are many changes to apply for the scale transition 
 when users are zooming out.
 If the changes are processed one by one 
-(e.g., \fig\ref{fig:intro}c--g),
+(\eg~\fig\ref{fig:intro}c--g),
 then the animation time interval for each change has to be very short.
 Users may still lose their context 
 because it can be difficult for them to perceive necessary changes.
@@ -270,16 +270,16 @@ to merge area objects one by one.
 In each iteration, that algorithm takes the least important area and 
 merges it into the most compatible neighbor.
 The importance of an area is defined 
-based on both the size and the type of the area.
+based on both the size and the classification (class importance).
 The compatibility between a pair of areas is defined based on 
-both the length of the common boundary and the type similarity
+both the length of the common boundary and the class similarity
 of the two areas. 
 \citet[\chap2]{Peng2019Thesis} tried to find an optimal sequence 
 to merge area objects
 based on the \Astar algorithm or an integer linear program.
 A comparison to a greedy algorithm showed that 
 the \Astar algorithm improves the quality of the merging sequences
-in the sense of the type changes and the compactnesses of the areas.
+in the sense of the class changes and the compactnesses of the areas.
 \Citet{vanOosterom2014Support} pointed out that 
 sequentially processing generalization operations 
 may result in a suboptimal smooth-zoom effect.
@@ -314,7 +314,7 @@ They showed a protocol to react to a map user's browsing the map.
 They made chunks of the data used to build the SSC
 so that they were able to send only the chunks relevant to the place
 where a map user was reading.
-They showed how to slice the SSC to output a web map at a given scale 
+They showed how to efficiently slice the SSC to output a web map at a given scale 
 using the GPU at the client side.
 In addition to slicing the SSC with a horizontal plane,
 they could also slice the SSC with a curly surface 
@@ -335,9 +335,23 @@ the work of handling map data
 according to the machine abilities of the clients.
 For example, the two other methods do not work for some concave polygons.
 
+\begin{figure}
+\centering
+\includegraphics[page=2,width=0.5\linewidth]{single_parallel_comparison}
+\caption{The SSC of the strategy of
+map generalization with gradual changes (see \fig\ref{fig:intro}).
+In the SSC, the vertical faces are removed 
+because they are not important for outputting a map.}
+\label{fig:bla}
+\end{figure}
+
+
+
+
 \citet{Suba2016Road} continuously generalized a planar map of road network.
 In each step, they process the least important face.
-Taking into account the condition of the face,
+Taking into account the local condition of the face
+(\eg~no compatible neighbor at the same side of the road),
 they may put it back with higher importance, collapse it, 
 or merge it into an adjacent face.
 In addition to the generalization, 
@@ -474,13 +488,13 @@ There are many ways of defining the most compatible neighbor.
 For example, \citet{Cheng2006} proposed three ways, i.e.,
 the neighbor has the largest size, 
 shares the longest boundary with the least important area,
-or is has the closest type to the least important area. 
+or is has the closest class to the least important area. 
 \citet{Peng2017AStar} proposed that 
-the most compatible neighbor should have a close land-cover type
+the most compatible neighbor should have a close class
 to the least important area
 and the combination of the two areas should be compact;
-they defined the type distance based on a binary tree
-according to the codes of the land-cover types.
+they defined the class distance based on a binary tree
+according to the codes of the classes.
 We currently consider the most compatible neighbor
 as the one shares the longest common boundary 
 with the least important area,
@@ -763,7 +777,9 @@ face\_id &   state\_start & state\_end    \\ \hline
  \caption{$y=3sinx$}
  \label{fig:three sin x}
 \end{subfigure}
-\caption{test.}
+\caption{The space-scale cubes of the two merging sequences, 
+where the vertical faces are removed 
+because they are not important for outputting a map.}
 \end{figure}
 
 
@@ -800,7 +816,7 @@ On the server side, we compute the values shown in \tbl\ref{tbl:sequence_greedy}
 \fig\ref{fig:sequence_greedy},
 where parallel parameter~$r_\mathrm{parallel}$ is set to~$0.3$.
 The computation starts from step~$1$.
-At the beginning, there are $7$ areas on the map, \ie$|M_0| = 7$.
+At the beginning, there are $7$ areas on the map, \ie~$|M_0| = 7$.
 According to \eq\ref{eq:n_expect},
 we expect to parallel three events ($n_{\mathrm{expect},1} = 3$).
 However, only two event can be paralleled in step~$1$ 
@@ -899,9 +915,9 @@ where variable~$j_k$ is the number of the same $n_\mathrm{diff}$ values in a row
 starting at step~$i$.
 Take the values of \tbl\ref{tbl:sequence_greedy} for example, 
 $j_1$ is~$3$ 
-because the first three~$n_\mathrm{diff}$ values are the same (\ie1),
+because the first three~$n_\mathrm{diff}$ values are the same (\ie~1),
 and~$j_2$ is~$2$ 
-because the following two~$n_\mathrm{diff}$ values are the same (\ie0). 
+because the following two~$n_\mathrm{diff}$ values are the same (\ie~0). 
 According to our strategy, 
 the~$n_\mathrm{diff}$ values of \tbl\ref{tbl:sequence_greedy}
 will be compressed to~$[[1,3], [0,2]]$,
@@ -1036,7 +1052,7 @@ accessed: Jan 14, 2020.},
 produced by Kadaster.
 %
 \figs\ref{fig:data}a and~\ref{fig:data}c show the map and the legend\footnote{%
-More details about the type code and the rendering formula can be found at
+More details about the class code and the rendering formula can be found at
 \url{http://register.geostandaarden.nl/visualisatie/top10nl/1.2.0/BRT_TOP10NL_1.2_beschrijving_visualisatie.xlsx},
 accessed: Jan 15, 2020.}.
 %
@@ -1126,7 +1142,7 @@ the area objects, we encounter more cases of the areas blocked.
 \begin{table}[tb]
 \centering
 \caption{The statistics when different parallel parameters area used 
-(\ie$r_\mathrm{parallel}=0.001$, $0.01$, or $0.1$).}
+(\ie~$r_\mathrm{parallel}=0.001$, $0.01$, or $0.1$).}
 \begin{tabular}{rrrr}
 \hline
 $r_\mathrm{parallel}$   & $L_\mathrm{diff\_rep}$        & $n_\mathrm{blocked}$  & $n_\mathrm{nbr\_blocked}$ \\ \hline
@@ -1256,7 +1272,7 @@ to find parallel merging events for each step.
 Alternatively, it is also possible to define merging steps 
 by selecting and combining some single-event steps of a sequence found 
 by some existing methods
-(e.g., the greedy algorithm of \citet{vanOosterom2005}
+(\eg~the greedy algorithm of \citet{vanOosterom2005}
 or the \Astar algorithm of \citet[\chap2]{Peng2019Thesis}).
 
 Currently, the merging events distribute randomly on a map.
@@ -1365,10 +1381,10 @@ We will conduct some usability tests based on the experience of
 
 %Some research questions are as follows.
 %What aspects should we optimize 
-%(e.g., minimizing the number of merging events or 
+%(\eg~minimizing the number of merging events or 
 %assigning similar numbers of merging steps to each event)?
 %What algorithm should we use 
-%(e.g., dynamic programming, \Astar, or integer linear programming)?
+%(\eg~dynamic programming, \Astar, or integer linear programming)?
 %How much time is gained for users to observe the merging steps on the screen?
 %How to store the parallel merging steps?
 
