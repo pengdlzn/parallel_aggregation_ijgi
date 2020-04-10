@@ -935,36 +935,35 @@ which state we are at
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 \subsection{Snapping to an Existing State}
 \label{sec:snap}
 
-For a zooming action
+When at the client side 
+using the SCC with parallel events for a zooming action
 (that is, slicing the SSC with a horizontal plane), 
-we always snap the map to an existing state
-so that users will not see a merging operation stops half-way
+we always snap the map to an existing state.
+In this way, users will not see a merging operation stops half-way
 and will not see transition artifact (such as slivers).
-Take \fig\ref{fig:smooth_merging} for example, 
+Take the sequence of \fig\ref{fig:intro}k--o for example, 
 the merging animation should stop at 
-either \ref{fig:smooth_merging}a or \ref{fig:smooth_merging}e,
-but not at \ref{fig:smooth_merging}b, \ref{fig:smooth_merging}c, 
-or \ref{fig:smooth_merging}d.
-Moreover, some states do not exist because of the parallel events.
-Such a case can be found in sequence~II of \fig\ref{fig:face_tgap},
-where state~$1$ does not exist.
-In this case, the merging animation should not stop at state~$1$.
-In order to snap to existing states, 
+either \ref{fig:intro}k or \ref{fig:intro}l,
+but not at \ref{fig:intro}r.
+%Note that some states do not exist because of the parallel events.
+%For example, state~$1$ does not exist 
+%in the sequence of \fig\ref{fig:intro}k--o.
+%In such case, the merging animation should not stop at state~$1$.
+In order to snap to existing states,
+we have to communicate the valid states to the client side. 
+There are multiple options. 
+The most simple one assumes that, 
+during the creation of the parallel SCC, 
+we can always perform the~$n_\mathrm{target}$ number of events in all steps. 
+In that case, we just have to communicate 
+the number of areas and the ratio~$r_\mathrm{parallel}$. 
+In case of high value ratios ($> 0.01$), 
+this assumption may not be correct. 
+We then have to communicate the valid states by sending them explicitly. 
+Because this list may get rather large,
 we compress the information of merging events and save it into 
 a JSON file (JavaScript Object Notation File).
 Then, the JSON file will be sent to the client side and uncompressed.
@@ -975,14 +974,16 @@ Then, the JSON file will be sent to the client side and uncompressed.
 
 On the server side, we compute the values shown in \tbl\ref{tbl:sequence_greedy}.
 \tbl\ref{tbl:sequence_greedy} is based on the merging steps of
-\fig\ref{fig:sequence_greedy},
+\fig\ref{fig:intro}k--o,
 where parallel parameter~$r_\mathrm{parallel}$ is set to~$0.3$.
+Note this value is extremely high, 
+just used to explain the principle in an artificial simple example.
 The computation starts from step~$1$.
 At the beginning, there are $7$ areas on the map, \ie~$|M_0| = 7$.
 According to \eq\ref{eq:n_target},
 we expect to parallel three events ($n_{\mathrm{target},1} = 3$).
 However, only two event can be paralleled in step~$1$ 
-according to the situation of \fig\ref{fig:sequence_greedy}.
+according to the situation of \fig\ref{fig:intro}k.
 Therefore, we have~$n_{\mathrm{event},1} = 2$.
 The difference of the expected value and the real value
 can be computed by
@@ -993,13 +994,13 @@ n_{\mathrm{diff},i} = n_{\mathrm{target},i} - n_{\mathrm{event},i},
 where variable~$i$ indicates the $i$-th step.
 That is, we have~$n_{\mathrm{diff},1}=1$, for step~$1$
 (also see the $n_\mathrm{diff}$ value in the first row of \tbl\ref{tbl:sequence_greedy}).
-We require that the starting state is~$s_{\mathrm{start},1} = 0$ for the first step.
-Then, the ending state can be computed by
+We require that the low state is~$s_{\mathrm{low},1} = 0$ for the first step.
+Then, the state\_high value can be computed by
 \begin{equation}
-\label{eq:state_end}
-s_{\mathrm{end},i} = s_{\mathrm{start},i} + n_{\mathrm{event},i}.
+\label{eq:state_high}
+s_{\mathrm{high},i} = s_{\mathrm{low},i} + n_{\mathrm{event},i}.
 \end{equation}
-That is, we have~$s_{\mathrm{end},1}=2$
+That is, we have~$s_{\mathrm{high},1}=2$
 (also see the state\_high value in the first row of \tbl\ref{tbl:sequence_greedy}).
 At this point, the computation for step~$1$ completes.
 
@@ -1022,15 +1023,15 @@ that is, $|M_s|$ of \eq\ref{eq:n_target}.
 \label{tbl:sequence_greedy}
 \centering
 \begin{tabular}{ccccccc}
-	\toprule
-	step & $n_\mathrm{area}$ & $n_\mathrm{target}$ 
-	& $n_\mathrm{event}$ & $n_\mathrm{diff}$ & state\_low & state\_high \\ \midrule
-	1        & 7      & 3        & 2        & 1     & 0      & 2      \\
-	2        & 5      & 2        & 1        & 1     & 2      & 3      \\
-	3        & 4      & 2        & 1        & 1     & 3      & 4      \\
-	4        & 3      & 1        & 1        & 0     & 4      & 5      \\
-	5        & 2      & 1        & 1        & 0     & 5      & 6      \\
-%	6     & 1      & ---      & ---      & ---    \\ \hline
+\toprule
+step & $n_\mathrm{area}$ & $n_\mathrm{target}$ 
+& $n_\mathrm{event}$ & $n_\mathrm{diff}$ & state\_low & state\_high \\ \midrule
+1        & 7      & 3        & 2        & 1     & 0      & 2      \\
+2        & 5      & 2        & 2        & 0     & 2      & 4      \\
+3        & 3      & 1        & 1        & 0     & 4      & 5      \\
+4        & 2      & 1        & 1        & 0     & 5      & 6      \\
+%5        & 2      & 1        & 1        & 0     & 5      & 6      \\
+%6     & 1      & ---      & ---      & ---    \\ 
 \bottomrule
 \end{tabular}
 \end{figure}
@@ -1040,12 +1041,18 @@ $$
 n_{\mathrm{area},i+1} = n_{\mathrm{area},i} - n_{\mathrm{event},i},
 $$
 where variable~$n_{\mathrm{area},i}$ denotes the area number 
-at the starting state of step~$i$.
-Furthermore, the starting state, $s_{\mathrm{start},i+1}$, is the same as  
-$s_{\mathrm{end},i}$.
-Based on~$n_{\mathrm{area},i+1}$ and~$s_{\mathrm{start},i+1}$,
-other values of this step can be computed.
-This process starts from step~$i=1$ and ends until only one area left.
+at the low state of step~$i$.
+Furthermore, the state\_low value, $s_{\mathrm{low},i+1}$, is the same as  
+$s_{\mathrm{high},i}$.
+Again, the target number of parallel events, $n_{\mathrm{target},i+1}$,
+can be computed by \eq\ref{eq:n_target},
+the number of actual parallel events can be obtained from the greedy algorithm,
+the value of difference, $n_{\mathrm{diff},i+1}$, 
+can be computed by \eq\ref{eq:n_diff}, 
+and the state\_high value, $s_{\mathrm{high},i+1}$, 
+can be computed by \eq\ref{eq:state_high}.
+The computation of all the steps starts from step~$i=1$ and 
+finishes until only one area left on the map.
 As a result, we have all the values of \tbl\ref{tbl:sequence_greedy}.
 
 
@@ -1069,35 +1076,49 @@ As a result, we have all the values of \tbl\ref{tbl:sequence_greedy}.
 %This process starts from step~$i=1$ and ends until only one area left.
 
 Now, we have a column of $n_\mathrm{diff}$ values.
-We compress those values as the form of 
-$$
-[[n_{\mathrm{diff},1},j_1], [n_{\mathrm{diff},1+j_1},j_2], \ldots, 
-[n_{\mathrm{diff},i},j_k], [n_{\mathrm{diff},i+j_k},j_{k+1}], \ldots],
-$$
-where variable~$j_k$ is the number of the same $n_\mathrm{diff}$ values in a row 
-starting at step~$i$.
-Take the values of \tbl\ref{tbl:sequence_greedy} for example, 
-$j_1$ is~$3$ 
-because the first three~$n_\mathrm{diff}$ values are the same (\ie~1),
-and~$j_2$ is~$2$ 
-because the following two~$n_\mathrm{diff}$ values are the same (\ie~0). 
-According to our strategy, 
-the~$n_\mathrm{diff}$ values of \tbl\ref{tbl:sequence_greedy}
-will be compressed to~$[[1,3], [0,2]]$,
-where each pair of values in the inner square brackets 
-record an~$n_\mathrm{diff}$ value and the number of repeat times.
+Among them, we record the non-zero values and the corresponding steps in a list.
+Take \tbl\ref{tbl:sequence_greedy} for example,
+the list is $[[1, 1]]$.
 The content of the JSON file is as following.
 \begin{verbatim}
                 {
                     "face_num": 7,
                     "parallel_param": 0.3,                    
-                    "eventdiff_repetition": [[1, 3], [0, 2]]
+                    "step_eventdiff": [[1, 1]]
                 }
 \end{verbatim}
-If we would have a list of $n_\mathrm{diff}$ values~$[0, 0, 0, 0, 0, 0, 5, 0, 0]$,
-then the compressed content would be~$[[0,6], [5,1], [0,2]]$.
-Our case study will show that this way of compressing is efficient
-(see \sect\ref{sec:case_study}).
+
+
+%We compress those values as the form of 
+%$$
+%[[n_{\mathrm{diff},1},j_1], [n_{\mathrm{diff},1+j_1},j_2], \ldots, 
+%[n_{\mathrm{diff},i},j_k], [n_{\mathrm{diff},i+j_k},j_{k+1}], \ldots],
+%$$
+%where variable~$j_k$ is the number of the same $n_\mathrm{diff}$ values in a row 
+%starting at step~$i$.
+%Take \tbl\ref{tbl:sequence_greedy} for example, 
+%the value of~$j_1$ is~$1$
+%because the following value (\ie~0) is already different 
+%from the first value (\ie~1) of~$n_\mathrm{diff}$.
+%The value of~$j_2$ is~$3$ 
+%because there are three same values in a row (\ie~0). 
+%According to our strategy, 
+%the~$n_\mathrm{diff}$ values of \tbl\ref{tbl:sequence_greedy}
+%will be compressed to~$[[1,1], [0,3]]$,
+%where each pair of values in the inner square brackets 
+%record an~$n_\mathrm{diff}$ value and the number of repeat times.
+%The content of the JSON file is as following.
+%\begin{verbatim}
+%                {
+%                    "face_num": 7,
+%                    "parallel_param": 0.3,                    
+%                    "step_eventdiff": [[1, 1]]
+%                }
+%\end{verbatim}
+%If we would have a list of $n_\mathrm{diff}$ values~$[0, 0, 0, 0, 0, 0, 5, 0, 0]$,
+%then the compressed content would be~$[[0,6], [5,1], [0,2]]$.
+%Our case study will show that this way of compressing is efficient
+%(see \sect\ref{sec:case_study}).
 
 
 
@@ -1107,8 +1128,8 @@ Our case study will show that this way of compressing is efficient
 
 When a user opens our web map,
 the JSON file will be sent to the client side.
-We can unpack the content of entry ``eventdiff\_repetition'' and 
-get the list of $n_\mathrm{diff}$ values~$[1, 1, 1, 0, 0]$.
+We can unpack the content of entry ``step\_eventdiff'' and 
+get the list of $n_\mathrm{diff}$ values~$[1, 0, 0, 0]$.
 Starting from step~$i=1$,
 we can again compute~$n_{\mathrm{target},i}$ according to \eq\ref{eq:n_target},
 where parallel parameter~$r_\mathrm{parallel}=0.3$ 
@@ -1126,11 +1147,11 @@ should be the same as the values before compressing
 
 According to the~$n_\mathrm{event}$ values,
 we can compute the accumulated number of events~$L_\mathrm{event} = 
-[0, 2, 3, 4, 5, 6]$,
+[0, 2, 4, 5, 6]$,
 which is also the list of existing states
 (see columns~state\_low and state\_high in \tbl\ref{tbl:sequence_greedy}).
 According to how much a user has zoomed,
-a scale ($1:S_t$) can be computed.
+a scale, say, $1:S_t$ can be computed.
 %According to \citet{Huang2016Webmap},
 %the number of merging events that should be processed can be computed by
 \citet{Huang2016Webmap} suggested that 
@@ -1191,10 +1212,10 @@ implemented in Python,
 to generate the elements
 (vertices, triangulated faces, and boundaries)
 of the SSC \citep{vanOosterom2014tGAPSSC} 
-and saved these elements in an OBJ file\footnote{%
+and saved these elements in an OBJ file.\footnote{%
 Wavefront .obj file:
 \url{https://en.wikipedia.org/wiki/Wavefront_.obj_file},
-accessed: Jan 14, 2020.}.
+accessed: Jan 14, 2020.}
 %
 The OBJ file and the JSON file (described in \sect\ref{sec:snap_server}) 
 will be sent to the client 
@@ -1205,20 +1226,18 @@ by a prototype implemented in JavaScript.
 The processed content and some code for WebGL (Web Graphics Library)
 are submitted to GPU to display the map of smooth zoom.
 
-\textbf{We consider the importance of an area as its size. 
-That is to say the least important area is the smallest area.}
 
 The dataset used in this case study is a topographic map, 
-a subset of TOP10NL\footnote{%
+a subset of TOP10NL,
+produced by Kadaster.\footnote{%
 More information about TOP10NL can be found at
 \url{https://zakelijk.kadaster.nl/-/topnl},
-accessed: Jan 14, 2020.},
-produced by Kadaster.
+accessed: Jan 14, 2020.}
 %
-\figs\ref{fig:data}a and~\ref{fig:data}c show the map and the legend\footnote{%
+\figs\ref{fig:data}a and~\ref{fig:data}c show the map and the legend.\footnote{%
 More details about the class code and the rendering formula can be found at
 \url{http://register.geostandaarden.nl/visualisatie/top10nl/1.2.0/BRT_TOP10NL_1.2_beschrijving_visualisatie.xlsx},
-accessed: Jan 15, 2020.}.
+accessed: Jan 15, 2020.}
 %
 Because the base scale is $1:10{,}000$, 
 we have~$S_b = 10{,}000$ for \eq\ref{eq:S_t_snap}.
@@ -1233,9 +1252,9 @@ At that moment, all the areas are merged into one single area
 In each step, we want to parallelly merge some proportion of the areas.
 We tried three cases: 0.1\%, 1\%, and 10\%.
 That is, parallel parameter~$r_\mathrm{parallel}=0.001, 0.01, \text{and~} 0.1$ 
-(see \sect\ref{sec:greedy_algo}).The three versions can be browsed online\footnote{%
+(see \sect\ref{sec:greedy_algo}).The three versions can be browsed online.\footnote{%
 Our web maps can be found at
-\url{https://pengdlzn.github.io/webmaps/2020/03/merge/}.}. 
+\url{https://pengdlzn.github.io/webmaps/2020/03/merge/}.} 
 \fig\ref{fig:web_map} shows an example of our web map when 
 parallel parameter~$r_\mathrm{parallel}=0.01$.
 In addition, the version of single-event step is also available online.
