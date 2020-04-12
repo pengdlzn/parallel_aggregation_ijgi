@@ -356,7 +356,7 @@ In the chain of processing area objects,
 they integrated cleaning, dissolving, splitting, aggregating, reclassifying, and simplifying. 
 
 \Citet{vanOosterom2014Support} explained the concept of the space-scale cube (SSC).
-At the bottom of the SSC is a detailed land-cover map.
+At the bottom of the SSC is a detailed topographic map.
 All the area objects extrude along the $z$-axis.
 In the SSC, an area on map becomes a polyhedron, and
 the common boundary of two areas is a vertical wall.
@@ -1234,8 +1234,8 @@ More information about TOP10NL can be found at
 \url{https://zakelijk.kadaster.nl/-/topnl},
 accessed: Jan 14, 2020.}
 %
-\figs\ref{fig:data}a and~\ref{fig:data}c show the map and the legend.\footnote{%
-More details about the class code and the rendering formula can be found at
+\figs\ref{fig:data} shows the map.\footnote{%
+The information about the class code and the rendering formula can be found at
 \url{http://register.geostandaarden.nl/visualisatie/top10nl/1.2.0/BRT_TOP10NL_1.2_beschrijving_visualisatie.xlsx},
 accessed: Jan 15, 2020.}
 %
@@ -1247,91 +1247,104 @@ When we zoom out far enough
 so that~$E_{t,\mathrm{snap}}$ reaches its maximum value,
 the scale denominator will arrive at~$1{,}150{,}565$
 according to \eq\ref{eq:S_t_snap}.
-At that moment, all the areas are merged into one single area
-(see \figs\ref{fig:data}b).
+At that moment, all the areas are merged into one single area.
+%(see \figs\ref{fig:data}b).
 In each step, we want to parallelly merge some proportion of the areas.
 We tried three cases: 0.1\%, 1\%, and 10\%.
 That is, parallel parameter~$r_\mathrm{parallel}=0.001, 0.01, \text{and~} 0.1$ 
 (see \sect\ref{sec:greedy_algo}).The three versions can be browsed online.\footnote{%
 Our web maps can be found at
 \url{https://pengdlzn.github.io/webmaps/2020/03/merge/}.} 
-\fig\ref{fig:web_map} shows an example of our web map when 
-parallel parameter~$r_\mathrm{parallel}=0.01$.
 In addition, the version of single-event step is also available online.
-
+\fig\ref{fig:web_map} shows two examples of our web map when 
+parallel parameter~$r_\mathrm{parallel}=0.01$.
 
 \begin{figure}[tb]
 \centering
-\includegraphics[page=1]{data}
-\caption{The topographic map represents the place 
-    in the south of Limburg, The Netherlands.}
+\includegraphics[page=1,draft=true]{data}
+\caption{
+    The topographic map represents the place 
+    in the south of Limburg, The Netherlands.
+    There are $13{,}238$ parcels.
+    The map is for scale $1:10{,}000$.}
 \label{fig:data}
 \end{figure}
 
 
 \begin{figure}[tb]
 \centering
-\includegraphics[page=1,scale=0.8]{case_study}
-\caption{An example of our web map,
-    where parallel parameter~$r_\mathrm{parallel}= 0.01$.}
+\begin{subfigure}[t]{\textwidth}
+\centering
+\includegraphics[page=1]{case_study}
+\caption{}
+\end{subfigure}
+\newline
+\vspace{0.3cm}
+%
+\begin{subfigure}[t]{\textwidth}
+\centering
+\includegraphics[page=2]{case_study}
+\caption{The displayed place is marked 
+    by the dashed rectangle in \fig\ref{fig:data}.}
+\end{subfigure}
+\caption{Two examples of our web map with different scales,
+    where parallel parameter~$r_\mathrm{parallel}= 0.01$.
+    }
 \label{fig:web_map}
 \end{figure}
 
-
-
-In the following, we show some results for the case of 
-parallel parameter~$r_\mathrm{parallel}= 0.01$.
-The content of the JSON file is 
-\begin{verbatim}
-                {
-                    "face_num": 13238,
-                    "parallel_param": 0.01,                    
-                    "eventdiff_repetition": [[0, 544]]
-                }
-\end{verbatim}
-According to entry ``eventdiff\_repetition'',
-there are~$544$ steps in total, 
-which can be computed by summing up the second values in all the inner brackets.
-There is only one pair of inner brackets in the list
-when parallel parameter~$r_\mathrm{parallel}= 0.01$,
-which shows that the compression strategy illustrated in
-\sect\ref{sec:snap} is very efficient.
-However, the strategy is not always that efficient;
-when~$r_\mathrm{parallel}= 0.1$, for example,
-there are many pairs of values in the list
-(see $L_\mathrm{diff\_rep}$ in \tbl\ref{tbl:parallel_param_comparison}).
-%
+Some statistics of the results when 
+parallel parameter~$r_\mathrm{parallel}=0.001$, $0.01$, or $0.1$ 
+are shown in \tbl\ref{tbl:parallel_param_comparison}.
+According to column~$n_\mathrm{step}$ of \tbl\ref{tbl:parallel_param_comparison},
+the number of steps decreases 
+when we use a larger parallel parameter.
 As explained in \sect\ref{sec:greedy_algo}, 
 for each merging step we iteratively select the least important area 
 and its most compatible neighbor to define a merging event; 
 then, we block the neighbors of the two areas.
 Sometimes, a least important area is already blocked 
 because of the previously found events.
-This situation happens~$3{,}216$ times in total for all the steps
+For example, this situation happens~$3{,}216$ times in total for all the steps
+when parallel parameter~$r_\mathrm{parallel}=0.01$
 (see column~$n_\mathrm{blocked}$ of \tbl\ref{tbl:parallel_param_comparison}).
 %
 Sometimes, although a least important area is free, 
 its most compatible neighbor has been blocked 
 because of the previously found events.
-This case happens~$1{,}841$ times in total for all the steps
+For example, this case happens~$1{,}841$ times in total for all the steps
+when parallel parameter~$r_\mathrm{parallel}=0.01$
 (see column~$n_\mathrm{nbr\_blocked}$ of \tbl\ref{tbl:parallel_param_comparison}).
 %
-More statistics of the results when 
-parallel parameter~$r_\mathrm{parallel}=0.001$, $0.01$, or $0.1$ 
-are shown in \tbl\ref{tbl:parallel_param_comparison}.
 Apparently, when merging a larger proportion of 
 the area objects, we encounter more cases of the areas blocked.
+However, we can still reach our target number of events perfectly 
+for settings of $r=0.01$ or $r=0.001$. 
+Only when we push beyond the limit, 
+we can not reach the target number of events in a step 
+(and we need correction information to get at actual number of achieved events). 
+One could also question the cartographic quality 
+if there is hardly any free choice when generalizing.
+
 
 \begin{table}[tb]
 \centering
-\caption{The statistics when different parallel parameters area used 
-(\ie~$r_\mathrm{parallel}=0.001$, $0.01$, or $0.1$).}
+\caption{Some statistics when different parallel parameters area used 
+    (\ie~$r_\mathrm{parallel}=0.001$, $0.01$, or $0.1$).
+    Column~$n_\mathrm{step}$ records the number of steps to transit 
+    from the base map to the map with a single area.    
+    Column~$n_\mathrm{blocked}$ records the number of times
+    when the least important area was blocked.
+    Column~$n_\mathrm{nbr\_blocked}$ records the number of times 
+    when the most compatible neighbor was blocked.
+}
 \begin{tabular}{rrrr}
-\hline
-$r_\mathrm{parallel}$   & $L_\mathrm{diff\_rep}$        & $n_\mathrm{blocked}$  & $n_\mathrm{nbr\_blocked}$ \\ \hline
-0.001                   & [[0, 3195]]                   &       228             &       72                  \\
-0.01                    & [[0, 544]]                    &   3{,}216             &  1{,}841                  \\
-0.1                     & $L_{\mathrm{diff\_rep}, 0.1}$ & 105{,}980             & 38{,}232                  \\ \hline 
+\toprule
+$r_\mathrm{parallel}$   & $n_\mathrm{step}$ & $n_\mathrm{blocked}$  & $n_\mathrm{nbr\_blocked}$ \\ \midrule
+0.001                   &  3{,}195          &       228             &       72                  \\
+0.01                    &  544              &   3{,}216             &  1{,}841                  \\
+0.1                     &  97               & 105{,}980             & 38{,}232                  \\ 
+\bottomrule 
 \end{tabular}
 %\begin{tabular}{cccc}
 %\hline
@@ -1340,15 +1353,10 @@ $r_\mathrm{parallel}$   & $L_\mathrm{diff\_rep}$        & $n_\mathrm{blocked}$  
 %least face blocked    & 228            & 3{,}216         & 105{,}980       \\
 %best neighbor blocked & 72            & 1{,}841        & 38{,}232 \\ \hline 
 %\end{tabular}
-\begin{Verbatim}[fontfamily=normal,commandchars=\\\{\},
-codes={\catcode`$=3\catcode`^=7\catcode`_=8}]
-$L_{\mathrm{diff\_rep},0.1}$ = [[51, 1], [138, 1], [152, 1], [200, 1], [205, 1], [181, 1], [198, 1], [167, 1], [173, 1], [165, 1], 
-[153, 1], [143, 1], [140, 1], [127, 1], [125, 1], [108, 1], [103, 1], [92, 2], [84, 1], [79, 1], [74, 1], [68, 1], 
-[60, 1], [54, 1], [46, 1], [50, 1], [48, 1], [45, 1], [39, 1], [44, 1], [37, 1], [36, 1], [32, 1], [30, 1], [26, 1], 
-[28, 1], [21, 2], [18, 1], [20, 1], [16, 1], [12, 1], [13, 1], [8, 1], [12, 2], [6, 1], [12, 1], [11, 1], [8, 1], [7, 1], 
-[6, 1], [7, 1], [4, 1], [5, 1], [4, 1], [5, 2], [7, 1], [5, 1], [4, 1], [5, 1], [3, 1], [4, 1], [3, 3], [2, 2], [1, 2], [2, 1], 
-[1, 2], [2, 1], [1, 3], [0, 2], [1, 2], [0, 14]]
-\end{Verbatim}
+%\begin{Verbatim}[fontfamily=normal,commandchars=\\\{\},
+%codes={\catcode`$=3\catcode`^=7\catcode`_=8}]
+%\hspace{4cm}$L_{\mathrm{step\_eventdiff},0.1}$ = [[1, 53], [2, 138], $\dots$, [88, 1]]
+%\end{Verbatim}
 %\fvset{gobble=2}
 %\begin{Verbatim}[fontfamily=normal,frame=single,
 %label=$L_{\mathrm{diff\_rep}, 0.1}$]
@@ -1364,17 +1372,41 @@ $L_{\mathrm{diff\_rep},0.1}$ = [[51, 1], [138, 1], [152, 1], [200, 1], [205, 1],
 
 
 
-
-
+When parallel parameter~$r_\mathrm{parallel}= 0.001$ or~$0.01$,
+we can find the target numbers of merging events for all the steps.
+For the two cases, entry ``step\_eventdiff'' of the JSON file
+(see \sect\ref{sec:snap_server})
+records an empty list.
+For example, when~$r_\mathrm{parallel}= 0.01$,
+The content of the JSON file is as following.
+\begin{verbatim}
+                {
+                    "face_num": 13238,
+                    "parallel_param": 0.01,                    
+                    "step_eventdiff": []
+                }
+\end{verbatim}
+When parallel parameter~$r_\mathrm{parallel}= 0.1$,
+the list in for entry ``step\_eventdiff'' is  
+$[[1, 53], [2, 138], \dots, [88, 1]]$,
+which in total has 81 pairs of values.
+In reality, we would not use~$r_\mathrm{parallel}= 0.1$
+(merging~$10\%$ of the current areas)
+because it is an unrealistic high value.
+Using such a high value results in a multi-scale presentation
+(because we have a few valid states or scales),
+while we would like to have representations at almost
+arbitrary scales.
 
 
 When zooming on our web maps with different parallel parameters,
 we observed that the impressions of the maps 
-based on single-event merging and based on parallel parameter~$r_\mathrm{parallel}= 0.001$ are almost the same.
+based on single-event merging and based on parallel parameter~$r_\mathrm{parallel}= 0.001$ 
+are almost the same.
 The reason is that the smooth merging happens too fast,
 and we cannot really see the animation of the expansion.
 We get the feeling of smooth merging when~$r_\mathrm{parallel}= 0.01$.
-when~$r_\mathrm{parallel}= 0.1$, the smooth merging is already obvious.
+When~$r_\mathrm{parallel}= 0.1$, the smooth merging is already obvious.
 Of course, the animation speed also depends on how much we want to zoom
 when we scroll the mouse wheel (zoom factor) 
 and depends on the specified animation duration (zoom animation);
@@ -1383,7 +1415,7 @@ see \fig\ref{fig:interaction_settings}.
 
 \begin{figure}[tb]
 \centering
-\includegraphics[page=2,scale=0.7]{case_study}
+\includegraphics[page=3,scale=0.7]{case_study}
 \caption{Our panel of settings. 
 Among others, one can set how much to zoom when scrolling the mouse wheel 
 and set the animation duration of the zooming.}
@@ -1402,8 +1434,11 @@ In each step, only one of the buildings will be merged into the surrounding area
 because an area is allowed to merge with only one area in each step.
 In the meantime, the areas at other places of the map merge relatively fast
 because we allow $10\%$ of the areas to be merged in each step.
-To fix the problem, we should allow a surrounding area 
-to merge with many of its holes in a single step.
+Fortunately, we would not need to use such a big parallel parameter in reality.
+
+
+%To fix the problem, we should allow a surrounding area 
+%to merge with many of its holes in a single step.
 
 
 
@@ -1417,6 +1452,9 @@ to merge with many of its holes in a single step.
 %For the first time, 
 This paper parallels generalization operations,
 using the merging operation as a case study. 
+The purpose of having parallel generalization operations 
+is to have smoother zooming experience later on 
+(compared to the pure sequenced individual generalization events).
 This paper develops a greedy algorithm to find parallel events of 
 merging area objects.
 Then, the parallel events are integrated into 
@@ -1482,11 +1520,16 @@ We may integrate a split method based on the straight skeleton
 \citep{Haunert2008Skeleton}
 or the skeleton based on constrained Delaunay triangulation
 \citep{Meijers2016Split}.
+In addition to area features, we also need to support line features 
+for these long objects (roads, river, rail) for the smaller scales.
 In order to apply appropriate generalization operators
 for a certain scale,
 we also need to extend and implement the framework 
 to guide our generalization choices
 \citep{Meijers2018Framework}.
+
+
+
 
 To avoid clutter of vertices for zooming out, 
 we also need to simplify the boundaries of the areas.
@@ -1499,13 +1542,18 @@ which is able to minimize the number of vertices
 for a given error threshold.
 One more choice would be to construct compatible triangulations 
 \citep[see][\chap3]{Peng2019Thesis}
-for the two levels of land-cover maps.
+for the two levels of topographic maps.
 In the SSC, we could build some tilted walls 
 to connect the two levels of compatible triangulations.
 When we slice this SSC to animate a zooming action,
 the boundaries of the areas are morphed 
 between a detailed representation and a coarse representation.
 We can imagine that it is challenging to build the tilted walls.
+Furthermore, we would also like to simplify point symbols and text labels
+in a smooth way.
+For this purpose, we may need to integrate the ideas of
+\citet{Haunert2017Label} and \citet{sahw-oarps-ICAGW13}.
+
 
 This paper develops technique for smooth zooming based on parallel merging,
 and we hope that it allows map users to follow the zooming more easily.
