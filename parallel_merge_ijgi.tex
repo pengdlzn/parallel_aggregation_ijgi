@@ -52,8 +52,10 @@ Area objects are important features on maps.
 When users zoom out on digital maps, 
 some area objects become too tiny to be seen, resulting in visual clutters. 
 To avoid this problem, the map needs to be generalized.
-We merge small and relatively unimportant areas 
-into their neighbors to form larger ones. 
+For example, the relatively unimportant areas need to be split or merged,
+and the boundaries need to be simplified.
+%We merge small and relatively unimportant areas 
+%into their neighbors to form larger ones. 
 We define an \emph{event} as a generalization operation, 
 which in our case is merging the least important area 
 into the most compatible neighbor.
@@ -77,7 +79,8 @@ which makes the merging events independent from each other.
 There are two benefits of this independency.
 First, it is easy for us to maintain the topology of the map.
 Second, users can more easily understand the events 
-than merging several areas into a single one.
+than merging several areas into a single one 
+so that they will not lose the context.
 This paper shows the details of finding and processing parallel events.
 Then, this paper compares between the scale transitions of maps generated
 based on single-event merging step and parallel-event merging step.
@@ -205,7 +208,7 @@ then we obtain \fig\ref{fig:intro}q,
 which is a smooth merging going on.\footnote{%
 Please try the map at
 \url{https://pengdlzn.github.io/webmaps/2020/04/merge-example/single-event/}.}
-This gradual strategy apparently allows users 
+This gradual strategy allows users 
 to follow the zooming more easily.
 
 
@@ -289,8 +292,10 @@ a direct change from \fig\ref{fig:intro}e to \fig\ref{fig:intro}g
 even when the three areas on the right-hand side of \fig\ref{fig:intro}e
 are merged gradually as each step is performed very fast.
 To provide users with more gradual impression, 
-we parallel the generalization operations,
-which in this paper are merging operations.
+we parallel the generalization operations.
+For example, we should split or merge the relatively unimportant areas,
+and and we should simplify the boundaries of the area.
+In this paper, we focus on paralleling merging operations.
 \figs\ref{fig:intro}h--j show such an example,
 where at each step two merging operations happen in parallel.
 If we select some of the generalization operations
@@ -358,7 +363,7 @@ they integrated cleaning, dissolving, splitting, aggregating, reclassifying, and
 \Citet{vanOosterom2014Support} explained the concept of the space-scale cube (SSC).
 At the bottom of the SSC is a detailed topographic map.
 All the area objects extrude along the $z$-axis.
-In the SSC, an area on map becomes a polyhedron, and
+In the SSC, an area on the map becomes a polyhedron, and
 the common boundary of two areas is a vertical wall.
 Whenever a generalization operation happens, 
 the extrusions of the involved areas stop;
@@ -369,12 +374,13 @@ That is to say, the scale becomes the third dimension of the map in the SSC
 (\eg~\fig\ref{fig:ssc_smooth_only}).
 Furthermore, they represented the smooth tGAP in the SSC.
 A typical example of the smooth generalization operation is that 
-an area merges another one by gradually expanding over it.
+an area merges with another one by gradually expanding over it.
 In the SSC for the smooth tGAP, 
 the wall starts to tilt when the expansion begins.
 Based on the SSC, \citet{Meijers2020Web} explained the principles of 
 implementing a web map of area objects.
-They showed a protocol to react to a map user's browsing the map.
+They showed how a vario-scale map for a large dataset 
+could be requested in parts.
 They made chunks of the data used to build the SSC
 so that they were able to send only the chunks relevant to the place
 where a map user was reading.
@@ -385,10 +391,11 @@ they could also slice the SSC with a curly surface
 to output a map with mixed scales.
 To build the SSC, \citet{Suba2014Merge} proposed three methods 
 to merge a pair of areas in a gradual manner, 
-which are the ``Single flat plane'', the ``Zipper'', and the ``Eater''.
+which are the \emph{Single flat plane}, the \emph{Zipper}, and the \emph{Eater}.
 Basically, the \emph{winner} gradually expands over the \emph{loser}.
-We will use the ``Eater'' because it works for all kinds of polygons 
+We will use the \emph{Eater} because it works for all kinds of polygons 
 while the other two methods have limitations for some special cases.
+For example, the two other methods do not work for some concave polygons.
 \citet{Huang2016Webmap} pointed out that
 the effort of implementing online maps 
 had been spent mainly on preparing data on the server side.
@@ -397,7 +404,7 @@ between the server side and the client side.
 They proposed different strategies of assigning 
 the work of handling map data
 according to the machine abilities of the clients.
-For example, the two other methods do not work for some concave polygons.
+
 
 
 \citet{Suba2016Road} continuously generalized a planar map of road network.
@@ -419,7 +426,7 @@ where the rows and the columns respectively represent
 the rivers and the vertices.
 According to the matrix, 
 they were able to decide which rivers and vertices 
-should be remained for a given scale.
+should remain for a given scale.
 To that purpose, they proposed a method 
 to compute how many rivers and vertices 
 should be kept according to that given scale.
@@ -446,8 +453,8 @@ In order to provide smooth merging
 so that map users can easily follow the changes,
 we merge by gradually expanding an area over another area
 (see \fig\ref{fig:intro}q).
-%This expansion is based on slicing the space-scale cube (SSC) shown in
-%\fig\ref{fig:smooth_merging_ssc}.
+This expansion can be visualized based on slicing the space-scale cube (SSC) shown in
+\fig\ref{fig:ssc_smooth_only}a.
 %For example, \figs\ref{fig:smooth_merging}a,
 %\ref{fig:smooth_merging}b, and \ref{fig:smooth_merging}c
 %are respectively obtained from slicing the cube 
@@ -563,13 +570,15 @@ as the one shares the longest common boundary
 with the least important area,
 and we consider the least important area 
 as the smallest area on the map.
+%This is different from earlier implementation, where the compatibility of neighbours was defined based on *both* the length of the common boundary and the class of the neighbouring polygon. Here, we could also involve the compactness of the result into the equation for deciding which neighbour is best (iff important that we want compact regions)
 
 \fig\ref{fig:greedy_framework} shows the flowchart of our greedy algorithm.
 The process starts with state~$s=0$ and a detailed map of area objects, $|M_0|$.
 Parallel parameter~$r_\mathrm{parallel}$ specifies 
-the proportion of area objects that
+the proportion (\ie~percentage) of area objects that
 we expect to merge parallelly.
-Apparently, there holds~$r_\mathrm{parallel} \in (0,1)$.
+As a value of percentage, $r_\mathrm{parallel}$ is in the range of $0\%$ and $100\%$,
+which means~$r_\mathrm{parallel} \in [0,1]$.
 Expression~$|M_s|$ denotes the number of area objects of the map at state~$s$.
 If there is more than one area ($|M_s|>1$),
 then we can start to find merging events.
@@ -1145,60 +1154,113 @@ The computed~$n_\mathrm{event}$ values
 should be the same as the values before compressing
 (see column~$n_\mathrm{event}$ in \tbl\ref{tbl:sequence_greedy}).
 
+
 According to the~$n_\mathrm{event}$ values,
 we can compute the accumulated number of events~$L_\mathrm{event} = 
 [0, 2, 4, 5, 6]$,
 which is also the list of existing states
 (see columns~state\_low and state\_high in \tbl\ref{tbl:sequence_greedy}).
 According to how much a user has zoomed,
-a scale, say, $1:S_t$ can be computed.
+a target scale, say, $1:S_\mathrm{t}$ can be computed.
 %According to \citet{Huang2016Webmap},
 %the number of merging events that should be processed can be computed by
 \citet{Huang2016Webmap} suggested that 
-the average density of areas over the whole domain
-on a screen should be remained for zooming.
+the average density of the original map should be preserved 
+for the smaller-scale map after a zoom-out operation.
 Their suggestion is based on the assumption that 
 the area density of the base map is well designed, which is reasonable.
 We use variable~$A_\mathrm{real}$ to denote the total areal size of 
 all the area objects in reality.
-Then, the size on screen at scale~$S_t$ 
-is~$A_\mathrm{real} \big/ S_t$,
-where~$1:S^2_t$ is the scale that we want to zoom to.
+Then, the size on screen at scale~$S_\mathrm{t}$ 
+is~$A_\mathrm{real} \big/ S_\mathrm{t}$,
+where~$1:S^2_\mathrm{t}$ is the scale that we want to zoom to.
 In order to keep the density, we require
 \begin{equation}
 \label{eq:equal_density}
-\frac{N_b}{A_\mathrm{real} \big/ S^2_b} =
-\frac{N_b-E_t}{A_\mathrm{real} \big/ S^2_t},
+\frac{N_\mathrm{b}}{A_\mathrm{real} \big/ S^2_\mathrm{b}} =
+\frac{N_\mathrm{b}-E_\mathrm{t}}{A_\mathrm{real} \big/ S^2_\mathrm{t}},
 \end{equation}
-where parameter~$N_b = |M_0|$ is the number of area objects on the base map,
-parameter~$S_b$ is the scale denominator of the base map,
-and variable~$E_t$ is the total number of events 
-happening from the base map to the map at scale~$1:S_t$.
+where parameter~$N_\mathrm{b} = |M_0|$ is the number of area objects on the base map,
+parameter~$S_\mathrm{b}$ is the scale denominator of the base map,
+and variable~$E_\mathrm{t}$ is the total number of events 
+happening from the base map to the map at scale~$1:S_\mathrm{t}$.
 \eq\ref{eq:equal_density} yields
 \begin{equation}
 \label{eq:E_t}
-E_t = N_b \left(1-\frac{S^2_b}{S^2_t}\right),
+E_\mathrm{t} = N_\mathrm{b} \left(1-\frac{S^2_\mathrm{b}}{S^2_\mathrm{t}}\right),
 \end{equation}
 In our example regarding to list~$L_\mathrm{event}$,
-if event number~$E_t \le 0$, the base map should be presented;
-if $E_t \ge 6$, the last value of list~$L_\mathrm{event}$,
+if event number~$E_\mathrm{t} \le 0$, the base map should be presented;
+if $E_\mathrm{t} \ge 6$, the last value of list~$L_\mathrm{event}$,
 the map with the final single area should be presented.
-Otherwise, if $0<E_t < 6$, we snap event number~$E_t$ 
+Otherwise, if $0<E_\mathrm{t} < 6$, we snap event number~$E_\mathrm{t}$ 
 to the closest value (measured in events) of list~$L_\mathrm{event}$,
-which is denoted by~$E_{t,\mathrm{snap}}$.
-The scale denominator corresponding to event number~$E_{t,\mathrm{snap}}$
+which is denoted by~$E_\mathrm{snap}$.
+The scale denominator corresponding to event number~$E_\mathrm{snap}$
 can be computed by 
 \begin{equation}
 \label{eq:S_t_snap}
-S_{t,\mathrm{snap}} = S_b \sqrt{\frac{N_b}{N_b-E_{t,\mathrm{snap}}}}.
+S_\mathrm{snap} = S_\mathrm{b} \sqrt{\frac{N_\mathrm{b}}{N_\mathrm{b}-E_\mathrm{snap}}}.
 \end{equation}
 Note that \eq\ref{eq:S_t_snap} is an inverse function of \eq\ref{eq:E_t}.
 At the end of the zooming action, 
-the map will snap to state~$E_{t,\mathrm{snap}}$,
-which is at scale~$1:S_{t,\mathrm{snap}}$.
+the map will snap to state~$E_\mathrm{snap}$,
+which is at scale~$1:S_\mathrm{snap}$.
 
 
 %\subsection{Line simplification (smoothly moving vertices for the SSC)}
+
+
+
+\subsection{Zooming Duration of a Step}
+\label{sec:zooming_duration}
+
+When users are zooming from a scale to another scale,
+some steps take place to change the map from a state to another one.
+The changing duration depends on the number of events between the two states,
+the \emph{zooming factor}, and the \emph{zooming duration}.
+\citet[][\sect4.3]{Meijers2020Web} 
+have introduced the zooming factor and the zooming duration.
+This paper formalizes the relationship.
+
+Let~$f_\mathrm{zoom}$ be the zooming factor, and 
+let~$t_\mathrm{zoom}$ be the zooming duration.
+Let~$1:S_\mathrm{i}$ be the current scale.
+When zooming out, we define the scale denominator of the target scale by
+\begin{equation}
+\label{eq:S_o}
+S_\mathrm{o} = S_\mathrm{i} (1 + f_\mathrm{zoom}).
+\end{equation}
+According to \eq\ref{eq:E_t}, we compute~$E_\mathrm{o}$ and~$E_\mathrm{i}$, where
+\begin{equation*}
+\label{eq:E_i}
+E_\mathrm{i} = N_\mathrm{b} \left(1-\frac{S^2_\mathrm{b}}{S^2_\mathrm{i}}\right).
+\end{equation*}
+The event number of zooming from scale~$1:S_\mathrm{i}$ to scale~$1:S_\mathrm{o}$ is
+\begin{equation}
+\label{eq:n_event}
+n_\mathrm{event} 
+= E_\mathrm{o} - E_\mathrm{i}
+= N_\mathrm{b} S^2_\mathrm{b} \left(\frac{1}{S^2_\mathrm{i}} - \frac{1}{S^2_\mathrm{o}}\right).
+\end{equation}
+That is to say, the $n_\mathrm{event}$ events will be processed in time duration~$t_\mathrm{zoom}$.
+In \eq\ref{eq:n_event}, if we replace scale denominator~$S_\mathrm{o}$ by~$S_\mathrm{snap}$,
+then we obtain the event number, $n_\mathrm{snap}$, to arrive the snapped scale.
+We define the time duration for processing the $n_\mathrm{snap}$ events as
+\begin{equation*}
+%\label{eq:E_i}
+t_\mathrm{snap}= t_\mathrm{zoom} \frac{n_\mathrm{snap}}{n_\mathrm{event}}.
+\end{equation*}
+
+When we zoom in back from scale~$S_\mathrm{o}$ to scale~$S_\mathrm{i}$, 
+
+\begin{equation}
+\label{eq:S_i}
+S_\mathrm{i} = \frac{S_\mathrm{o}}{(1 + f_\mathrm{zoom})},
+\end{equation}
+which is the inverse function of \eq\ref{eq:S_o}.
+
+
 
 
 \section{Case Study}
@@ -1240,11 +1302,11 @@ The information about the class code and the rendering formula can be found at
 accessed: Jan 15, 2020.}
 %
 Because the base scale is $1:10{,}000$, 
-we have~$S_b = 10{,}000$ for \eq\ref{eq:S_t_snap}.
-The maximum value for event number~$E_{t,\mathrm{snap}}$ is~$13{,}237$
+we have~$S_\mathrm{b} = 10{,}000$ for \eq\ref{eq:S_t_snap}.
+The maximum value for event number~$E_\mathrm{snap}$ is~$13{,}237$
 as there are in total~$13{,}238$ areas.
 When we zoom out far enough 
-so that~$E_{t,\mathrm{snap}}$ reaches its maximum value,
+so that~$E_\mathrm{snap}$ reaches its maximum value,
 the scale denominator will arrive at~$1{,}150{,}565$
 according to \eq\ref{eq:S_t_snap}.
 At that moment, all the areas are merged into one single area.
