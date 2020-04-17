@@ -132,7 +132,7 @@ maintaining map consistency over scale transition.
 
 
 When map users are reading digital maps,
-they expect different levels of detail (LoDs) depending on scale.
+they expect different levels of detail (LoDs), depending on the scale.
 For example, they may want to see individual buildings when zooming in
 and see built-up areas when zooming out.
 That is why geographical information is dependent on the scale
@@ -733,7 +733,8 @@ will be changed accordingly.
 
 \begin{table}[tb]
 \caption{Some columns of the face tables. 
-In table~(b), the different values from table~(a) are underlined.}
+In table~(b), the different values from table~(a) are underlined.
+\textbf{add column state\_expand so that readers can understand better}}
 \label{tbl:face_tgap}
 \begin{subtable}{0.45\textwidth}
 \caption{The face table of the single-event merging 
@@ -1183,7 +1184,8 @@ In order to keep the density, we require
 where parameter~$N_\mathrm{b} = |M_0|$ is the number of area objects on the base map,
 parameter~$S_\mathrm{b}$ is the scale denominator of the base map,
 and variable~$E_\mathrm{t}$ is the total number of events 
-happening from the base map to the map at scale~$1:S_\mathrm{t}$.
+happening from the base map (at scale~~$1:S_\mathrm{b}$) 
+to the map at scale~$1:S_\mathrm{t}$.
 \eq\ref{eq:equal_density} yields
 \begin{equation}
 \label{eq:E_t}
@@ -1195,17 +1197,20 @@ if $E_\mathrm{t} \ge 6$, the last value of list~$L_\mathrm{event}$,
 the map with the final single area should be presented.
 Otherwise, if $0<E_\mathrm{t} < 6$, we snap event number~$E_\mathrm{t}$ 
 to the closest value (measured in events) of list~$L_\mathrm{event}$,
-which is denoted by~$E_\mathrm{snap}$.
-The scale denominator corresponding to event number~$E_\mathrm{snap}$
+which is denoted by~$E_\mathrm{t,snap}$.
+The scale denominator corresponding to event number~$E_\mathrm{t,snap}$
 can be computed by 
 \begin{equation}
 \label{eq:S_t_snap}
-S_\mathrm{snap} = S_\mathrm{b} \sqrt{\frac{N_\mathrm{b}}{N_\mathrm{b}-E_\mathrm{snap}}}.
+S_\mathrm{t,snap} = S_\mathrm{b} \sqrt{\frac{N_\mathrm{b}}{N_\mathrm{b}-E_\mathrm{t,snap}}}.
 \end{equation}
 Note that \eq\ref{eq:S_t_snap} is an inverse function of \eq\ref{eq:E_t}.
 At the end of the zooming action, 
-the map will snap to state~$E_\mathrm{snap}$,
-which is at scale~$1:S_\mathrm{snap}$.
+the map will snap to state~$s_\mathrm{t,snap}$
+at scale~$1:S_\mathrm{t,snap}$.
+Note that state~$s_\mathrm{t,snap}$ always has 
+the same value as event number~$E_\mathrm{t,snap}$.
+
 
 
 %\subsection{Line simplification (smoothly moving vertices for the SSC)}
@@ -1217,48 +1222,185 @@ which is at scale~$1:S_\mathrm{snap}$.
 
 When users are zooming from a scale to another scale,
 some steps take place to change the map from a state to another one.
-The changing duration depends on the number of events between the two states,
+The changing duration of each event 
+depends on the number of events between the two states,
 the \emph{zooming factor}, and the \emph{zooming duration}.
 \citet[][\sect4.3]{Meijers2020Web} 
 have introduced the zooming factor and the zooming duration.
 This paper formalizes the relationship.
+In a zooming duration, there can be many merging steps,
+no matter single-event merging or parallel-event merging.
+The following calculation is based on the setting that
+a zooming duration is divided equally by its merging steps
+(\citet[][\sect6.7]{Suba2017Thesis} showed some other possible settings);
+the steps happen sequentially and take the same amount of time.
+Note that the steps from different zooming durations may take place different
+amounts of time.
+%In the following calculation, 
+%we assume that we can always find the target number 
+%(see \eq\ref{eq:n_target})
+%of events for all the steps.
+%If there are exceptions, 
+%then the following calculation should be adjusted accordingly.
 
 Let~$f_\mathrm{zoom}$ be the zooming factor, and 
 let~$t_\mathrm{zoom}$ be the zooming duration.
-Let~$1:S_\mathrm{i}$ be the current scale.
-When zooming out, we define the scale denominator of the target scale by
+Let~$1:S_\mathrm{t,snap}$ be the current snapped scale, and 
+let~$1:S_\mathrm{o}$ be the zoomed out scale (not snapped yet).
+When zooming out, we define the relationship 
+between the two scale denominators as
 \begin{equation}
 \label{eq:S_o}
-S_\mathrm{o} = S_\mathrm{i} (1 + f_\mathrm{zoom}).
+S_\mathrm{o} = S_\mathrm{t,snap} (1 + f_\mathrm{zoom}).
 \end{equation}
-According to \eq\ref{eq:E_t}, we compute~$E_\mathrm{o}$ and~$E_\mathrm{i}$, where
+We can also compute the number of events at scale~$1:S_\mathrm{o}$, 
+from the base map, by
+\begin{equation*}
+\label{eq:E_o}
+E_\mathrm{o} = N_\mathrm{b} \left(1-\frac{S^2_\mathrm{b}}{S^2_\mathrm{o}}\right).
+\end{equation*}
+As the value of~$E_\mathrm{o}$ may be not an integer, 
+we also snap it to an existing state
+(see \sect\ref{sec:snap_client})
+so that we have a snapped value~$E_\mathrm{o,snap}$.
+Then, we can computed scale denominator~$S_\mathrm{o,snap}$
+by \eq\ref{eq:S_t_snap}.
+According to \eq\ref{eq:E_t}, we have merged~$E_\mathrm{t,snap}$ areas 
+when we arrive at scale~$1:S_\mathrm{t,snap}$.
+The event number of zooming out
+from scale~$1:S_\mathrm{t,snap}$ to scale~$1:S_\mathrm{o}$ is
+%$
+\begin{equation}
+\label{eq:N_event}
+N_\mathrm{event} = 
+E_\mathrm{o,snap} - E_\mathrm{t,snap}.
+\end{equation}
+%$
+%Accordingly, we can compute scale denominator~$S_\mathrm{o,snap}$
+%by \eq\ref{eq:S_t_snap}
+Time duration~$t_\mathrm{zoom}$ is for zooming from 
+from scale~$1:S_\mathrm{t,snap}$ to scale~$1:S_\mathrm{o}$.
+Now we are zooming to~$1:S_\mathrm{o,snap}$,
+so we adjust the time duration to
 \begin{equation*}
 \label{eq:E_i}
-E_\mathrm{i} = N_\mathrm{b} \left(1-\frac{S^2_\mathrm{b}}{S^2_\mathrm{i}}\right).
+t_\mathrm{snap}= t_\mathrm{zoom} 
+%\frac{n_\mathrm{event}}
+\frac{N_\mathrm{event}}
+{E_\mathrm{o} - E_\mathrm{t,snap}}.
 \end{equation*}
-The event number of zooming from scale~$1:S_\mathrm{i}$ to scale~$1:S_\mathrm{o}$ is
+%\begin{equation}
+%\label{eq:n_event}
+%n_\mathrm{event} 
+%= E_\mathrm{o} - E_\mathrm{t,snap}
+%= N_\mathrm{b} S^2_\mathrm{b} \left(\frac{1}{S^2_\mathrm{t,snap}} - \frac{1}{S^2_\mathrm{o}}\right).
+%\end{equation}
+That is to say, the~$E_\mathrm{o,snap} - E_\mathrm{t,snap}$ events will happen 
+in time duration~$t_\mathrm{snap}$.
+If the events happen sequentially (each step consists of a single event), 
+then the duration of each event is
 \begin{equation}
-\label{eq:n_event}
-n_\mathrm{event} 
-= E_\mathrm{o} - E_\mathrm{i}
-= N_\mathrm{b} S^2_\mathrm{b} \left(\frac{1}{S^2_\mathrm{i}} - \frac{1}{S^2_\mathrm{o}}\right).
+\label{eq:t_single}
+t_\mathrm{single}   = \frac{t_\mathrm{snap}}{N_\mathrm{event}} 
+                    = \frac{t_\mathrm{zoom}}{E_\mathrm{o} - E_\mathrm{t,snap}}.
 \end{equation}
-That is to say, the $n_\mathrm{event}$ events will be processed in time duration~$t_\mathrm{zoom}$.
-In \eq\ref{eq:n_event}, if we replace scale denominator~$S_\mathrm{o}$ by~$S_\mathrm{snap}$,
-then we obtain the event number, $n_\mathrm{snap}$, to arrive the snapped scale.
-We define the time duration for processing the $n_\mathrm{snap}$ events as
+
+If we parallel these events, 
+then we will have fewer steps and 
+each event has more time to take place.
+Let~$n_\mathrm{step}$ be the step number of the parallel events 
+in the same zooming duration.
+If we are lucky enough so that
+expression~$r_\mathrm{parallel} \cdot |M_s|$ of \eq\ref{eq:n_target}
+always returns an integer, 
+then we do not need the ceiling function of \eq\ref{eq:n_target}.
+We have 
 \begin{equation*}
-%\label{eq:E_i}
-t_\mathrm{snap}= t_\mathrm{zoom} \frac{n_\mathrm{snap}}{n_\mathrm{event}}.
+%\label{eq:n_event}
+N_\mathrm{t,snap} (1-r_\mathrm{parallel})^{n_\mathrm{step}} = N_\mathrm{o,snap},
 \end{equation*}
+where~$N_\mathrm{t,snap} = N_\mathrm{b}- E_\mathrm{t,snap}$ 
+and~$N_\mathrm{o,snap} = N_\mathrm{b}- E_\mathrm{o,snap}$.
+Therefore, we have
+\begin{equation*}
+%\label{eq:n_event}
+n_\mathrm{step} = \log_{1-r_\mathrm{parallel}} 
+    \frac{N_\mathrm{o,snap}}{N_\mathrm{t,snap}}.
+\end{equation*}
+Each of the parallel events has time
+\begin{equation}
+\label{eq:t_parallel}
+t_\mathrm{parallel} = \frac{t_\mathrm{snap}}{n_\mathrm{step}}.
+\end{equation}
+Putting \eqs\ref{eq:t_single} and~\ref{eq:t_parallel} together,
+we have
+\begin{equation}
+\label{eq:t_compare}
+t_\mathrm{parallel} = t_\mathrm{single}  \frac{N_\mathrm{event}}{n_\mathrm{step}}.
+\end{equation}
+As~$N_\mathrm{event}$ is for sure larger than or equal to~$n_\mathrm{step}$,
+$t_\mathrm{parallel}$ is also larger than or equal to~$t_\mathrm{single}$.
 
-When we zoom in back from scale~$S_\mathrm{o}$ to scale~$S_\mathrm{i}$, 
 
+When we zoom in back from scale~$S_\mathrm{o,snap}$ to scale~$S_\mathrm{t}$, 
+we have
 \begin{equation}
 \label{eq:S_i}
-S_\mathrm{i} = \frac{S_\mathrm{o}}{(1 + f_\mathrm{zoom})},
+S_\mathrm{t} = \frac{S_\mathrm{o,snap}}{(1 + f_\mathrm{zoom})},
 \end{equation}
 which is the inverse function of \eq\ref{eq:S_o}.
+We will be able to snap to scale~$1:S_\mathrm{t,snap}$.
+We will use the same time and process the same number of events and steps as we zoomed out.
+The difference is that, instead of merging, areas will bubble up.
+
+
+%\bigskip
+%\bigskip
+%\bigskip
+%\bigskip
+%
+%
+%The number of remaining areas can be computed by
+%\begin{equation}
+%\label{eq:N_t}
+%N_\mathrm{t,snap} 
+%= N_\mathrm{b} - E_\mathrm{t,snap}
+%= N_\mathrm{b} \frac{S^2_\mathrm{b}}{S^2_\mathrm{t,snap}}.
+%\end{equation}
+%Similarly, the number of areas at scale~$1:S_\mathrm{o}$ is 
+%\begin{equation}
+%\label{eq:N_o}
+%N_\mathrm{o} 
+%= N_\mathrm{b} \frac{S^2_\mathrm{b}}{S^2_\mathrm{o}}.
+%\end{equation}
+%
+%Let~$1:S_\mathrm{o,snap}$ be the snapped scale of scale~$1:S_\mathrm{o}$.
+%Similar to \eq\ref{eq:N_t}, the number of areas at scale~$1:S_\mathrm{o,snap}$ is
+%\begin{equation}
+%\label{eq:N_o_snap}
+%N_\mathrm{o,snap} 
+%= N_\mathrm{b} - E_\mathrm{t,snap}
+%= N_\mathrm{b} \frac{S^2_\mathrm{b}}{S^2_\mathrm{o,snap}}.
+%\end{equation}
+%The number of events 
+%from scale~$1:S_\mathrm{t,snap}$ to scale~$1:S_\mathrm{o,snap}$ is
+%
+%
+%
+%In \eq\ref{eq:n_event}, if we replace scale denominator~$S_\mathrm{o}$ by~$S_\mathrm{snap}$,
+%then we obtain the event number, $n_\mathrm{snap}$, 
+%to arrive the snapped scale (\ie~existing state), where
+%\begin{equation}
+%\label{eq:n_snap}
+%n_\mathrm{snap} 
+%= E_\mathrm{snap} - E_\mathrm{t}
+%= N_\mathrm{b} S^2_\mathrm{b} \left(\frac{1}{S^2_\mathrm{t}} - \frac{1}{S^2_\mathrm{snap}}\right).
+%\end{equation}
+%
+%
+%We define the time duration for processing the $n_\mathrm{snap}$ events as
+
+
 
 
 
@@ -1314,7 +1456,8 @@ At that moment, all the areas are merged into one single area.
 In each step, we want to parallelly merge some proportion of the areas.
 We tried three cases: 0.1\%, 1\%, and 10\%.
 That is, parallel parameter~$r_\mathrm{parallel}=0.001, 0.01, \text{and~} 0.1$ 
-(see \sect\ref{sec:greedy_algo}).The three versions can be browsed online.\footnote{%
+(see \sect\ref{sec:greedy_algo}).
+The three versions can be browsed online.\footnote{%
 Our web maps can be found at
 \url{https://pengdlzn.github.io/webmaps/2020/03/merge/}.} 
 In addition, the version of single-event step is also available online.
