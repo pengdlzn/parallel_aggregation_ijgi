@@ -209,7 +209,8 @@ which is a smooth merging going on.\footnote{%
 Please try the map at
 \url{https://pengdlzn.github.io/webmaps/2020/04/merge-example/single-event/}.}
 This gradual strategy allows users 
-to follow the zooming more easily.
+to better keep their context during zooming
+so that they do not need to re-orientate.
 
 
 \begin{figure}[tb]
@@ -294,7 +295,7 @@ are merged gradually as each step is performed very fast.
 To provide users with more gradual impression, 
 we parallel the generalization operations.
 For example, we should split or merge the relatively unimportant areas,
-and and we should simplify the boundaries of the area.
+and we should simplify the boundaries of the area.
 In this paper, we focus on paralleling merging operations.
 \figs\ref{fig:intro}h--j show such an example,
 where at each step two merging operations happen in parallel.
@@ -307,18 +308,18 @@ Please try the map at
 Moreover, if the selected operations
 fairly evenly distribute on the whole map, 
 then there may be only a limited number of operations 
-happening on the screen.
+happening in users' focused region.
 We assume that it is easier for users to follow 
-when fewer operations take place longer on the screen.
-As for the operations happening outside the screen,
+when fewer operations take place longer on the focused region.
+As for the operations happening outside the focused region,
 they can be ignored because 
 they are not interesting to map users at the moment.
 For example, in the focused area, there is only one merging operation 
-from \fig\ref{fig:intro}i to \fig\ref{fig:intro}j
+from \fig\ref{fig:intro}l to \fig\ref{fig:intro}m
 while there are two merging operations  
-from \fig\ref{fig:intro}e to \fig\ref{fig:intro}g;
-a user has twice of the time to perceive the changes of the former,
-comparing to the latter.
+from \fig\ref{fig:intro}f to \fig\ref{fig:intro}h;
+a user will have twice of the time to perceive the changes of the former
+(see \sect\ref{sec:zooming_duration}).
 
 This paper is organized as follows.
 \sect\ref{sec:realted_work} reviews some related work.
@@ -350,9 +351,8 @@ the \Astar algorithm improves the quality of the merging sequences
 in the sense of the class changes and the compactnesses of the areas.
 \Citet{vanOosterom2014Support} pointed out that 
 sequentially processing generalization operations 
-may result in a suboptimal smooth-zoom effect.
-So, they suggested that
-the generalization operations should be paralleled.
+may result in no change at some locations, which seems unnatural.
+They proposed to parallel the generalization operations.
 %Then, one question is how many operations 
 %should be paralleled for a given scale.
 \citet{Thiemann2018LandCover} proposed a chain of operators 
@@ -565,12 +565,18 @@ to the least important area
 and the combination of the two areas should be compact;
 they defined the class distance based on a binary tree
 according to the codes of the classes.
-We currently consider the most compatible neighbor
+We currently consider the least important area 
+as the smallest area on the map,
+and we consider the most compatible neighbor
 as the one shares the longest common boundary 
-with the least important area,
-and we consider the least important area 
-as the smallest area on the map.
-%This is different from earlier implementation, where the compatibility of neighbours was defined based on *both* the length of the common boundary and the class of the neighbouring polygon. Here, we could also involve the compactness of the result into the equation for deciding which neighbour is best (iff important that we want compact regions)
+with the least important area.
+%This is different from earlier implementation, 
+%where the compatibility of neighbours was defined 
+%based on *both* the length of the common boundary and 
+%the class of the neighbouring polygon. 
+%Here, we could also involve the compactness of the result 
+%into the equation for deciding 
+%which neighbour is best (iff important that we want compact regions)
 
 \fig\ref{fig:greedy_framework} shows the flowchart of our greedy algorithm.
 The process starts with state~$s=0$ and a detailed map of area objects, $|M_0|$.
@@ -733,55 +739,61 @@ will be changed accordingly.
 
 \begin{table}[tb]
 \caption{Some columns of the face tables. 
-In table~(b), the different values from table~(a) are underlined.
-\textbf{add column state\_expand so that readers can understand better}}
+    Columns state\_low, state\_expand, and state\_low show the states 
+    when the faces appear, when the faces start to disappear, and
+    when the faces completely disappear.    
+    In table~(b), the different values from table~(a) are underlined.
+    Column state\_expand is not really stored in the database.
+    We show the column so that it is easy to see the differences 
+    between the state\_low values and the state\_expand values.
+    }
 \label{tbl:face_tgap}
-\begin{subtable}{0.45\textwidth}
+\begin{subtable}{0.48\textwidth}
 \caption{The face table of the single-event merging 
     shown in \figs\ref{fig:intro}d--j.}
 \centering
-\begin{tabular}{ccc}
+\begin{tabular}{cccc}
 \toprule
-face\_id & state\_low   & state\_high \\ \midrule
-1       &     0         &     1       \\
-2       &     0         &     1       \\
-3       &     0         &     2       \\ 
-4       &     0         &     5       \\
-5       &     0         &     4       \\
-6       &     0         &     3       \\         
-7       &     0         &     3       \\
-8       &     1         &     2       \\
-9       &     2         &     6       \\         
-10      &     3         &     4       \\
-11      &     4         &     5       \\ 
-12      &     5         &     6       \\ 
-13      &     6         &    ---      \\
+face\_id& state\_low    & state\_expand & state\_high \\ \midrule
+1       &     0         &     0         &     1       \\
+2       &     0         &     0         &     1       \\
+3       &     0         &     1         &     2       \\ 
+4       &     0         &     4         &     5       \\
+5       &     0         &     3         &     4       \\
+6       &     0         &     2         &     3       \\         
+7       &     0         &     2         &     3       \\
+8       &     1         &     1         &     2       \\
+9       &     2         &     5         &     6       \\         
+10      &     3         &     3         &     4       \\
+11      &     4         &     4         &     5       \\ 
+12      &     5         &     5         &     6       \\ 
+13      &     6         &    ---        &    ---      \\
 \bottomrule
 \end{tabular}
 \end{subtable}
 %
 \hfill
 %
-\begin{subtable}{0.45\textwidth}
+\begin{subtable}{0.48\textwidth}
 \caption{The face table of the parallel-event merging 
     shown in \figs\ref{fig:intro}k--o.}
 \centering
-\begin{tabular}{ccc} %\underbar{2}
+\begin{tabular}{cccc} %\underbar{2}
 \toprule
-face\_id & state\_low   & state\_high \\ \midrule
-1       &     0         &\underbar{2} \\
-2       &     0         &\underbar{2} \\
-3       &     0         &\underbar{4} \\ 
-4       &     0         &     5       \\
-5       &     0         &     4       \\
-6       &     0         &\underbar{2} \\         
-7       &     0         &\underbar{2} \\
-8       &\underbar{2}   &\underbar{4} \\
-9       &     2         &\underbar{6} \\         
-10      &\underbar{4}   &\underbar{4} \\
-11      &     4         &     5       \\ 
-12      &     5         &     6       \\ 
-13      &     6         &    ---      \\
+face\_id & state\_low   & state\_expand & state\_high \\ \midrule
+1       &     0         &     0         &\underbar{2} \\
+2       &     0         &     0         &\underbar{2} \\
+3       &     0         & \underbar{2}  &\underbar{4} \\ 
+4       &     0         &     4         &     5       \\
+5       &     0         & \underbar{2}  &     4       \\
+6       &     0         & \underbar{0}  &\underbar{2} \\         
+7       &     0         & \underbar{0}  &\underbar{2} \\
+8       & \underbar{2}  & \underbar{2}  &\underbar{4} \\
+9       &     2         &     5         &\underbar{6} \\         
+10      & \underbar{4}  & \underbar{2}  &\underbar{4} \\
+11      &     4         &     4         &     5       \\ 
+12      &     5         &     5         &     6       \\ 
+13      &     6         &    ---        &    ---      \\
 \bottomrule
 \end{tabular}
 \end{subtable}
@@ -873,8 +885,7 @@ the triangles of the less important areas should be tilted.
 A simple way is to add a column, say, \emph{state\_expand} 
 into the face table during generating the tGAP.
 Then, the states of starting expansion can be recorded into the column.
-However, we would like to avoid unnecessary columns
-so that the table is concise and easy to read.
+However, we would like to avoid unnecessary columns to save storage.
 Therefore, we compute state\_expand values 
 based on the state\_high values
 on the fly when building the SSC.
@@ -923,8 +934,8 @@ As a result, the animation duration of merging area~3 into area~8 of
 sequence \figs\ref{fig:intro}k--o
 is almost twice as that of sequence \figs\ref{fig:intro}d--j.
 We say \emph{almost} because the animation duration is also dependent on 
-which state we are at 
-\textbf{see section of relationship between time duration and time}.
+which state we are at
+(see \sect\ref{sec:zooming_duration}).
 
 
 %According to \tbl\ref{tbl:face_tgap}, 
@@ -1225,8 +1236,15 @@ some steps take place to change the map from a state to another one.
 The changing duration of each event 
 depends on the number of events between the two states,
 the \emph{zooming factor}, and the \emph{zooming duration}.
+On the one hand, the changing duration should not be too short 
+as then there is no time to display a merging animation at all. 
+On the other hand, if the changing duration takes too long, 
+the map will not be interactive, and users will be ``frustrated''.
 \citet[][\sect4.3]{Meijers2020Web} 
 have introduced the zooming factor and the zooming duration.
+They allowed users to set the two parameters,
+which is also the case in this paper
+(see \fig\ref{fig:interaction_settings}).
 This paper formalizes the relationship.
 In a zooming duration, there can be many merging steps,
 no matter single-event merging or parallel-event merging.
@@ -1242,6 +1260,16 @@ amounts of time.
 %of events for all the steps.
 %If there are exceptions, 
 %then the following calculation should be adjusted accordingly.
+
+\begin{figure}[tb]
+\centering
+\includegraphics[page=6,scale=0.7]{methodology}
+\caption{Our panel of settings. 
+Among others, one can set how much to zoom when scrolling the mouse wheel 
+and set the animation duration of the zooming.}
+\label{fig:interaction_settings}
+\end{figure}
+
 
 Let~$f_\mathrm{zoom}$ be the zooming factor, and 
 let~$t_\mathrm{zoom}$ be the zooming duration.
@@ -1313,7 +1341,8 @@ in the same zooming duration.
 If we are lucky enough so that
 expression~$r_\mathrm{parallel} \cdot |M_s|$ of \eq\ref{eq:n_target}
 always returns an integer, 
-then we do not need the ceiling function of \eq\ref{eq:n_target}.
+then we do not need the ceiling function of \eq\ref{eq:n_target}
+(if we are not that lucky, the value of~$n_\mathrm{step}$ will be slightly different).
 We have 
 \begin{equation*}
 %\label{eq:n_event}
@@ -1410,7 +1439,7 @@ The difference is that, instead of merging, areas will bubble up.
 
 We have stored the result of the tGAP 
 as a set of tables (see \sect\ref{sec:integrate_tgap}) 
-in the PostgreSQL database.
+in a PostgreSQL database.
 We have employed the ``Eater'' of \citet{Suba2014Merge},
 implemented in Python, 
 to generate the elements
@@ -1428,7 +1457,8 @@ On the client side,
 the two files are processed
 by a prototype implemented in JavaScript.
 The processed content and some code for WebGL (Web Graphics Library)
-are submitted to GPU to display the map of smooth zoom.
+are submitted to GPU so that we can output the map with smooth zooming
+by slicing the SSC.
 
 
 The dataset used in this case study is a topographic map, 
@@ -1603,7 +1633,9 @@ Using such a high value results in a multi-scale presentation
 while we would like to have representations at almost
 arbitrary scales.
 
-
+We set zooming factor~$f_\mathrm{zoom}=1$ and 
+zooming duration~$t_\mathrm{zoom}=1 s$ 
+(see \sect\ref{sec:zooming_duration}).
 When zooming on our web maps with different parallel parameters,
 we observed that the impressions of the maps 
 based on single-event merging and based on parallel parameter~$r_\mathrm{parallel}= 0.001$ 
@@ -1612,20 +1644,7 @@ The reason is that the smooth merging happens too fast,
 and we cannot really see the animation of the expansion.
 We get the feeling of smooth merging when~$r_\mathrm{parallel}= 0.01$.
 When~$r_\mathrm{parallel}= 0.1$, the smooth merging is already obvious.
-Of course, the animation speed also depends on how much we want to zoom
-when we scroll the mouse wheel (zoom factor) 
-and depends on the specified animation duration (zoom animation);
-see \fig\ref{fig:interaction_settings}.
 
-
-\begin{figure}[tb]
-\centering
-\includegraphics[page=3,scale=0.7]{case_study}
-\caption{Our panel of settings. 
-Among others, one can set how much to zoom when scrolling the mouse wheel 
-and set the animation duration of the zooming.}
-\label{fig:interaction_settings}
-\end{figure}
 
 When parallel parameter~$r_\mathrm{parallel}$ is set to~$0.1$,
 we notice a problem in the northeast corner of the map.
@@ -1702,15 +1721,18 @@ by some existing methods
 or the \Astar algorithm of \citet[\chap2]{Peng2019Thesis}).
 
 Currently, the merging events distribute randomly on a map.
-If we are unlucky, there may be a lot of events happening in the screen 
+If we are unlucky, there may be a lot of events happening in users' focused region
 for a time duration,
-which are difficult for us to follow;
-for another time duration, there may be no event happening in the screen at all.
+which are difficult to follow;
+for another time duration, there may be no event happening in the focused region at all.
 A good strategy is to evenly distribute the merging events for each step, 
 then the workload for us to follow the events is stable during the zooming.
 To this end, we could divide a map into many regions using road network.
 Then, we could find a certain number of events in each of the regions according to
-the regions' sizes.
+the regions' sizes,
+which should result in an even distribution of events.
+Finally, we could compare our current greedy algorithm and 
+the algorithm considering even distribution of events.
 
 
 Our current event consists of only the merging operation,
@@ -1751,7 +1773,7 @@ for the two levels of topographic maps.
 In the SSC, we could build some tilted walls 
 to connect the two levels of compatible triangulations.
 When we slice this SSC to animate a zooming action,
-the boundaries of the areas are morphed 
+the boundaries of the areas are morphed (moved smoothly and parallelly)
 between a detailed representation and a coarse representation.
 We can imagine that it is challenging to build the tilted walls.
 Furthermore, we would also like to simplify point symbols and text labels
