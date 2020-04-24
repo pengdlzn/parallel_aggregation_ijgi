@@ -188,7 +188,7 @@ For example, there are large and discrete changes when
 Before this replacing, \fig\ref{fig:intro}a remains
 (\eg~\fig\ref{fig:intro}p is the same as \fig\ref{fig:intro}a).\footnote{%
 Please try the map at
-\url{https://pengdlzn.github.io/webmaps/2020/04/merge-example/discrete/}.}
+\url{https://pengdlzn.github.io/webmaps/2020/04/merge/example-discrete/}.}
 To provide small changes for scale transition, 
 \citet{vanOosterom2005} proposed 
 the topological Generalized Area Partitioning (tGAP) tree,
@@ -207,7 +207,7 @@ If slicing the SSC by a horizontal plane at~$z=50$,
 then we obtain \fig\ref{fig:intro}q, 
 which is a smooth merging going on.\footnote{%
 Please try the map at
-\url{https://pengdlzn.github.io/webmaps/2020/04/merge-example/single-event/}.}
+\url{https://pengdlzn.github.io/webmaps/2020/04/merge/example-single-event/}.}
 This gradual strategy allows users 
 to better keep their context during zooming
 so that they do not need to re-orientate.
@@ -304,7 +304,7 @@ and process them in parallel,
 then each operation has more time to take place 
 than the operations are processed one after another.\footnote{%
 Please try the map at
-\url{https://pengdlzn.github.io/webmaps/2020/04/merge-example/paralle-events/}.}
+\url{https://pengdlzn.github.io/webmaps/2020/04/merge/example-paralle-event/}.}
 Moreover, if the selected operations
 fairly evenly distribute on the whole map, 
 then there may be only a limited number of operations 
@@ -319,7 +319,10 @@ from \fig\ref{fig:intro}l to \fig\ref{fig:intro}m
 while there are two merging operations  
 from \fig\ref{fig:intro}f to \fig\ref{fig:intro}h;
 a user will have twice of the time to perceive the changes of the former
-(see \sect\ref{sec:zooming_duration}).
+(see \sect\ref{sec:zooming_duration}).\footnote{%
+A comparison of the single-event merging (left) and the parallel-event merging (right) is at
+\url{https://pengdlzn.github.io/webmaps/2020/04/merge/example-paralle-event/comparer.html}, 
+where the slider at the left-hand side can be moved to adjust the boxes for the two maps.}
 
 This paper is organized as follows.
 \sect\ref{sec:realted_work} reviews some related work.
@@ -473,23 +476,6 @@ for an area with any kind of shape, which is more robust than
 %\ref{fig:smooth_merging}c, or \ref{fig:smooth_merging}d.
 
 
-%\begin{figure}[tb]
-%\centering
-%\includegraphics[page=1]{smooth_merging}
-%\caption{A smooth way of merging two areas,
-%    where the larger area gradually expands over the smaller one.}
-%\label{fig:smooth_merging}
-%%
-%\vspace{6mm}
-%%
-%\centering
-%\includegraphics[page=2, scale=0.3]{smooth_merging}
-%\caption{The space-scale cube for the merging 
-%    of \fig\ref{fig:smooth_merging}.
-%    This figure is made by visualizing the content of an obj file in 
-%    ParaView 5.6.0.}
-%\label{fig:smooth_merging_ssc}
-%\end{figure}
 
 
 We define an \emph{event} as a single generalization operation, 
@@ -1489,10 +1475,10 @@ That is, parallel parameter~$r_\mathrm{parallel}=0.001, 0.01, \text{and~} 0.1$
 (see \sect\ref{sec:greedy_algo}).
 The three versions can be browsed online.\footnote{%
 Our web maps can be found at
-\url{https://pengdlzn.github.io/webmaps/2020/03/merge/}.} 
-In addition, the version of single-event step is also available online.
+\url{https://pengdlzn.github.io/webmaps/2020/04/merge/}.}
 \fig\ref{fig:web_map} shows two examples of our web map when 
 parallel parameter~$r_\mathrm{parallel}=0.01$.
+
 
 \begin{figure}[tb]
 \centering
@@ -1576,9 +1562,9 @@ if there is hardly any free choice when generalizing.
 \begin{tabular}{rrrr}
 \toprule
 $r_\mathrm{parallel}$   & $n_\mathrm{step}$ & $n_\mathrm{blocked}$  & $n_\mathrm{nbr\_blocked}$ \\ \midrule
-0.001                   &  3{,}195          &       228             &       72                  \\
-0.01                    &  544              &   3{,}216             &  1{,}841                  \\
-0.1                     &  97               & 105{,}980             & 38{,}232                  \\ 
+0.001                   &  3{,}195          &       212             &       72                  \\
+0.01                    &  544              &   2{,}715             &  1{,}382                  \\
+0.1                     &  91               & 100{,}634             & 34{,}416                  \\ 
 \bottomrule 
 \end{tabular}
 %\begin{tabular}{cccc}
@@ -1623,8 +1609,8 @@ The content of the JSON file is as following.
 \end{verbatim}
 When parallel parameter~$r_\mathrm{parallel}= 0.1$,
 the list in for entry ``step\_eventdiff'' is  
-$[[1, 53], [2, 138], \dots, [88, 1]]$,
-which in total has 81 pairs of values.
+$[[1, 19], [2, 126], \dots, [77, 1]]$,
+which in total has~$73$ pairs of values.
 In reality, we would not use~$r_\mathrm{parallel}= 0.1$
 (merging~$10\%$ of the current areas)
 because it is an unrealistic high value.
@@ -1638,13 +1624,34 @@ zooming duration~$t_\mathrm{zoom}=1 s$
 (see \sect\ref{sec:zooming_duration}).
 When zooming on our web maps with different parallel parameters,
 we observed that the impressions of the maps 
-based on single-event merging and based on parallel parameter~$r_\mathrm{parallel}= 0.001$ 
+based on single-event merging\footnote{%
+See the web map at
+\url{https://pengdlzn.github.io/webmaps/2020/04/merge/single-event/}.} 
+and based on parallel parameter~$r_\mathrm{parallel}= 0.001$ 
 are almost the same.
 The reason is that the smooth merging happens too fast,
 and we cannot really see the animation of the expansion.
 We get the feeling of smooth merging when~$r_\mathrm{parallel}= 0.01$.
 When~$r_\mathrm{parallel}= 0.1$, the smooth merging is already obvious.
+In order to show a better comparison,
+we put two maps together (see \fig\ref{fig:comparison}),
+which are the map of single-event merging and 
+the map of parallel-event merging with~$r_\mathrm{parallel}= 0.01$.\footnote{%
+See the map of comparison at
+\url{https://pengdlzn.github.io/webmaps/2020/04/merge/0.01/comparer.html}.}  
 
+
+\begin{figure}[tb]
+\centering
+\includegraphics[page=3]{case_study}
+\caption{
+    The map to the left of the slider is based on single-event merging,
+    and the one to the right is based on parallel-event merging
+    with parallel parameter~$r_\mathrm{parallel}= 0.01$.
+    The slider can be moved to show different proportions of the two maps.
+}
+\label{fig:comparison}
+\end{figure}
 
 When parallel parameter~$r_\mathrm{parallel}$ is set to~$0.1$,
 we notice a problem in the northeast corner of the map.
@@ -1694,23 +1701,57 @@ our approach provides smooth merging for zooming.
 \subsection{Future Work}
 
 Many topics related to this research need to be investigated further.
-\fig\ref{fig:smooth_merging} shows our current solution of
+\fig\ref{fig:smooth_merging}a--e shows our solution of
 gradually expanding an area over the other area.
-In order to make the expansion even smoother,
-we would like to implement the way of expanding
-shown in \fig\ref{fig:smooth_merging_future}.
+Our strategy of presenting the static boundary (\ie~the exterior one) 
+is that we store the polylines and 
+draw them with width, 
+where the width is computed according to the map scale.
+However, this strategy is not suitable for drawing a moving boundary
+because there can be infinitive number of versions of the moving boundary
+during zooming.
+That is why we did not draw the black common boundary in 
+\figs\ref{fig:smooth_merging}b--d.
+In order to present the moving black common boundary on map, 
+we may need to store the polyhedron of it in the SSC.
+Furthermore, we would also like the common boundary 
+to be thinner and thinner during zooming out
+(see \figs\ref{fig:smooth_merging}f--j).
+It may be even better if the color of the smaller area (pink)
+changes to the color of the larger one (light yellow) smoothly.
+
 
 \begin{figure}[tb]
 \centering
-\includegraphics[page=3]{smooth_merging}
-\caption{A smooth way of merging two areas, 
-    which we would like to achieve in future.
-    The larger area expands over the smaller one.
-    At the same time, 
-    the smaller area gradually adapt to the color of the larger one,
-    and the common boundary becomes thinner and thinner.}
-\label{fig:smooth_merging_future}
+\includegraphics[page=1]{concluding_remarks}
+\caption{
+    Our available solution of merging animation 
+    and a possible future solution.}
+\label{fig:smooth_merging}
 \end{figure}
+
+
+
+%\begin{figure}[tb]
+%\centering
+%\includegraphics[page=1]{smooth_merging}
+%\caption{A smooth way of merging two areas,
+%    where the larger area gradually expands over the smaller one.}
+%\label{fig:smooth_merging}
+%%
+%\vspace{6mm}
+%%
+%\centering
+%\includegraphics[page=2, scale=0.3]{smooth_merging}
+%\caption{The space-scale cube for the merging 
+%    of \fig\ref{fig:smooth_merging}.
+%    This figure is made by visualizing the content of an obj file in 
+%    ParaView 5.6.0.}
+%\label{fig:smooth_merging_ssc}
+%\end{figure}
+
+
+
 
 This paper used a greedy algorithm 
 to find parallel merging events for each step.
@@ -1723,10 +1764,13 @@ or the \Astar algorithm of \citet[\chap2]{Peng2019Thesis}).
 Currently, the merging events distribute randomly on a map.
 If we are unlucky, there may be a lot of events happening in users' focused region
 for a time duration,
-which are difficult to follow;
+which may be too much workload for a user to follow;
 for another time duration, there may be no event happening in the focused region at all.
-A good strategy is to evenly distribute the merging events for each step, 
-then the workload for us to follow the events is stable during the zooming.
+The strategy of blocking neighbor areas in our greedy algorithm 
+already mitigates the problem somehow.
+However, it may be even better if 
+we explicitly distribute the merging events evenly, 
+then the workload for a user to follow the events is stable during the zooming.
 To this end, we could divide a map into many regions using road network.
 Then, we could find a certain number of events in each of the regions according to
 the regions' sizes,
@@ -1967,6 +2011,24 @@ We will conduct some usability tests based on the experience of
 %%% optional
 %\appendixtitles{no} %Leave argument "no" if all appendix headings stay EMPTY (then no dot is printed after "Appendix A"). If the appendix sections contain a heading then change the argument to "yes".
 %\appendix
+\appendix
+\section{Create the Table of Compatibility Values and the Table of Weights}
+\lstinputlisting[
+           language=SQL,
+           showspaces=false,
+           showstringspaces=false,
+%           basicstyle=\ttfamily,
+%           basicstyle=\small,
+           basicstyle=\footnotesize,
+%           numbers=left,
+%           numberstyle=\tiny,
+           commentstyle=\color{gray},
+           linewidth=\textwidth,
+           gobble=2,
+           tabsize=2,
+        ]{images/top10nl_9x9_class_comp_weight_tabes.sql}
+
+
 %\section{}
 %\unskip
 %\subsection{}
