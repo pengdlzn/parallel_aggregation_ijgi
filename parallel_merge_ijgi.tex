@@ -134,17 +134,17 @@ maintaining map consistency over scale transition.
 \section{Introduction}
 
 
-When map users are reading digital maps,
-they expect different levels of detail (LoDs), depending on the scale.
+When users are reading digital maps,
+they expect different levels of detail (LoDs) depending on the scale.
 For example, they may want to see individual buildings when zooming in
 and see built-up areas when zooming out.
 That is why geographical information is dependent on the scale
 \citep{Muller1995Generalization,Weibel1997}. 
 In order to prepare map data for different scales,
-map generalization is employed to generate coarser data 
+a detailed map is generalized to generate coarser data 
 for maps at smaller scales,
-from a detailed map.
-A lot of research has been devoted to map generalization.
+which is known as map generalization.
+%A lot of research has been devoted to map generalization.
 \citet{Mackaness2017Generalization} gave a taxonomy of 
 generalization algorithms, 
 including selection, simplification, aggregation, and so on.
@@ -164,7 +164,7 @@ to generalize buildings
 \citep[\eg][]{Li2017_Building,Peng2017Building,Touya2017Progressive},
 to transform road networks
 \citep[\eg][]{Suba2016Road,Chimani2014Eat},
-and to transform administrative boundaries
+and to transit administrative boundaries
 \citep[\eg][]{Peng2016Admin}.
 %Indeed, there are already many algorithms 
 %for continuous map generalization.
@@ -192,26 +192,32 @@ For example, there are large and discrete changes when
 Before this replacing, \fig\ref{fig:intro}a remains
 (\eg~\fig\ref{fig:intro}p is the same as \fig\ref{fig:intro}a).\footnote{%
 Please try the map at
-\url{https://pengdlzn.github.io/webmaps/2020/04/merge/example-discrete/}.}
-To provide small changes for scale transition, 
+\url{https://pengdlzn.github.io/webmaps/2020/05/merge/example-discrete/}.}
+Because of the large and discrete changes,
+users may need a while to realize that 
+the pink area is merged into the light-blue area.
+This problem can be mitigated if latter smoothly expand over the former
+(see \fig\ref{fig:intro}q), where users can immediately understand 
+what happened to the pink area. 
+To provide scale transition of small changes, 
 \citet{vanOosterom2005} proposed 
 the topological Generalized Area Partitioning (tGAP) tree,
 where in each step the least important area is merged into
 its most compatible neighbor 
-(see \figs\ref{fig:intro}c--g).
+(see \figs\ref{fig:intro}d--j).
 Further, \citet{vanOosterom2014Support} proposed smooth tGAP
 to gradually apply generalization operations 
 (such as merge, split, and simplify).
-Based on the smooth tGAP, a space-scale cube (SSC) can be built so that 
+Based on the smooth tGAP, a space-scale cube (SSC) is built so that 
 the scale transition of a map can be realized smoothly
 by slicing the SSC \citep[see][]{Meijers2020Web}.
-For example, \fig\ref{fig:ssc_smooth_only} is the SSC 
+For example, \fig\ref{fig:ssc_smooth_only}a is the SSC 
 for the smooth zooming of \figs\ref{fig:intro}d--j.
-If slicing the SSC by a horizontal plane at~$z=50$,
+If slicing the SSC by a horizontal plane at~$z=250$,
 then we obtain \fig\ref{fig:intro}q, 
 which is a smooth merging going on.\footnote{%
 Please try the map at
-\url{https://pengdlzn.github.io/webmaps/2020/04/merge/example-single-event/}.}
+\url{https://pengdlzn.github.io/webmaps/2020/05/merge/example-single-event/}.}
 This gradual strategy allows users 
 to better keep their context during zooming
 so that they do not need to re-orientate
@@ -221,23 +227,24 @@ so that they do not need to re-orientate
 \begin{figure}[tb]
 \centering
 \includegraphics[page=1]{introduction}
-\caption{A comparison of different animation strategies for zooming out.
+\caption{A comparison of different scale-transition strategies for zooming out.
 Each arrow inside the subfigures indicates that 
 an area will be merged into another one.
-The arrow in the right-hand side indicates the animation time of zooming out.
+The arrow in the right-hand side indicates the states of zooming out,
+which is related to transition duration.
 %
 (a--c): All changes are processed in one go.
 (d--j): All changes are sequenced one by one rapidly.
-(k--o): Changes are grouped, resulting in more animation time for every change.
+(k--o): Changes are grouped, resulting in more animation duration for every change.
 %where smooth and parallel changes going on can be found in figure~(r);
 %digital map with smooth and parallel generalization operations.
 %
 The ellipse shows an example place where large and discrete change happens.
-The dashed polygon show the place where a user may focus;
-in the place, the user has twice of the time to perceive the merging
-of figures (k--l),
-comparing to the merging of figures (d--f).
-The numbers are the face ids, which will be used in \sect\ref{sec:methodology}.
+The dashed polygon shows the place where a user may focus;
+in the place, the user has about twice of the duration 
+to perceive the merging of the pink area, i.e., figures (k--l),
+comparing to figures (f--g).
+The numbers are ids of the faces, which will be used in \sect\ref{sec:methodology}.
 }
 \label{fig:intro}
 \end{figure}
@@ -251,7 +258,7 @@ The numbers are the face ids, which will be used in \sect\ref{sec:methodology}.
     If slicing the SSC with a horizontal plane at $z$-coordinates~$0$, 
     $100$, $200$, $300$, $400$, $500$, and~$600$,
     then we respectively get \figs\ref{fig:intro}d--j.
-    If slicing it at $z$-coordinate~$50$,
+    If slicing it at $z$-coordinate~$250$,
     then we get \fig\ref{fig:intro}q.}
 \end{subfigure}
 \hfill
@@ -266,73 +273,72 @@ The numbers are the face ids, which will be used in \sect\ref{sec:methodology}.
     then we get \fig\ref{fig:intro}r.}
 \end{subfigure}
 \caption{
-The $z$-coordinate corresponds to the denominator of the scale.
-The $z$-coordinate also corresponds to the animation time of zooming.
-The smooth animation of zooming out can be obtained by
-slicing the SSC from bottom to top.
 The content of each of the SSCs is stored in an OBJ file,
 and each of the figures is generated by displaying the OBJ file
-in ParaView~5.8.0.}
+in ParaView~5.8.0.
+The $z$-coordinates are $100$ times of the state values in \fig\ref{fig:intro}.
+We did this multiplication so that the contents can be better observed;
+otherwise, the two SSCs will be very short when displayed in ParaView.
+The faces are displayed with opacity~$0.8$.
+Smooth animations of zooming out are obtained by
+slicing the SSCs from bottom to top.
+}
 \label{fig:ssc_smooth_only}
 \end{figure}
-
-
 
 
 
 When users zoom on maps, 
 they do not want to wait for too long to see the map at the desired scale.
 On a real map, however, 
-there are many changes to apply for the scale transition 
-when users are zooming out.
+many changes must be processed to arrive at the desired scale.
 If the changes are processed one by one 
 (\eg~\figs\ref{fig:intro}d--j),
-then the animation time interval for each change has to be very short.
-Users may still lose their context 
-because it can be difficult for them to perceive necessary changes.
+then the animation duration for each change has to be very short.
+Users may still lose their context because of the fast changes.
 For example, a user may get the impression of
-a direct change from \fig\ref{fig:intro}e to \fig\ref{fig:intro}g
-(without the intermediate state of \fig\ref{fig:intro}f)
-even when the three areas on the right-hand side of \fig\ref{fig:intro}e
-are merged gradually as each step is performed very fast.
+a shock change from \fig\ref{fig:intro}f to \fig\ref{fig:intro}h
+(without the intermediate state of \fig\ref{fig:intro}g)
+even when the three areas on the right-hand side of \fig\ref{fig:intro}f
+are merged smoothly.
 To provide users with more gradual impression, 
 we parallel the generalization operations.
 For example, we should split or merge the relatively unimportant areas,
 and we should simplify the boundaries of the areas.
-In this paper, we focus on paralleling merging operations.
-\figs\ref{fig:intro}h--j show such an example,
-where at each step two merging operations happen in parallel.
 If we select some of the generalization operations
 and process them in parallel,
 then each operation has more time to take place 
-than the operations are processed one after another.\footnote{%
-Please try the map at
-\url{https://pengdlzn.github.io/webmaps/2020/04/merge/example-paralle-event/}.}
+than the operations are processed one after another.
 Moreover, if the selected operations
 fairly evenly distribute on the whole map, 
 then there may be only a limited number of operations 
 happening in users' focused region.
-We assume that it is easier for users to follow 
+We assume that it is easier for users to keep track of their interested areas
 when fewer operations take place longer on the focused region.
 As for the operations happening outside the focused region,
 they can be ignored because 
 they are not interesting to map users at the moment.
+In this paper, we focus on paralleling merging operations.\footnote{%
+Please try the map at
+\url{https://pengdlzn.github.io/webmaps/2020/05/merge/example-parallel-event/}.}
 For example, in the focused area, there is only one merging operation 
 from \fig\ref{fig:intro}l to \fig\ref{fig:intro}m
 while there are two merging operations  
 from \fig\ref{fig:intro}f to \fig\ref{fig:intro}h;
-a user will have twice of the time to perceive the changes of the former
-(see \sect\ref{sec:zooming_duration}).\footnote{%
-A comparison of the single-event merging (left) and the parallel-event merging (right) is at
-\url{https://pengdlzn.github.io/webmaps/2020/04/merge/example-paralle-event/comparer.html}, 
+a user will have about twice of the duration to perceive the changes of the former
+(see duration assignment in \sect\ref{sec:zooming_duration}).\footnote{%
+A comparison of the single-event merging (left) 
+and the parallel-event merging (right) is at
+\url{https://pengdlzn.github.io/webmaps/2020/05/merge/example-paralle-event/comparer.html}, 
 where the slider at the left-hand side can be 
-moved to adjust the boxes for the two maps.}
+moved to adjust the canvases of the two maps.}
+
 
 This paper is organized as follows.
 \sect\ref{sec:realted_work} reviews some related work.
 Our methodology is presented in \sect\ref{sec:methodology}.
 We show a case study in \sect\ref{sec:case_study}.
-Finally, \sect\ref{sec:concluding_remarks} draws our conclusion
+Finally, \sect\ref{sec:concluding_remarks} draws the conclusion
 and present our future work.
 
 
@@ -345,21 +351,22 @@ and present our future work.
 to merge area objects one by one.
 In each iteration, that algorithm takes the least important area and 
 merges it into the most compatible neighbor.
-The importance of an area is defined 
-based on both the size and the classification (class importance).
-The compatibility between a pair of areas is defined based on 
-both the length of the common boundary and the class similarity
-of the two areas. 
-\citet[\chap2]{Peng2019Thesis} tried to find an optimal sequence 
-to merge area objects
+The importance of an area is the multiplication 
+of its size and its classification weight.
+The compatibility value between a pair of areas is 
+the multiplication of the length of the common boundary and 
+the class similarity of the two areas. 
+\citet[\chap2]{Peng2019Thesis} tried to 
+find an optimal sequence to merge area objects 
 based on the \Astar algorithm or an integer linear program.
 A comparison to a greedy algorithm showed that 
 the \Astar algorithm improves the quality of the merging sequences
-in the sense of the class changes and the compactnesses of the areas.
+in the sense of the class changes and the area compactnesses.
 \Citet{vanOosterom2014Support} pointed out that 
 sequentially processing generalization operations 
-may result in no change at some locations, which seems unnatural.
-They proposed to parallel the generalization operations.
+may result in no change at some locations in a zooming duration, 
+which seems unnatural.
+Therefore, they suggested paralleling the generalization operations.
 %Then, one question is how many operations 
 %should be paralleled for a given scale.
 \citet{Thiemann2018LandCover} proposed a chain of operators 
@@ -370,38 +377,38 @@ aggregating, reclassifying, and simplifying.
 
 \Citet{vanOosterom2014Support} 
 explained the concept of the space-scale cube (SSC).
-At the bottom of the SSC is a detailed topographic map.
-All the area objects extrude along the $z$-axis.
+At the bottom of the SSC is a detailed topographic map,
+and all the area objects extrude along the $z$-axis.
 In the SSC, an area on the map becomes a polyhedron, and
 the common boundary of two areas is a vertical wall.
 Whenever a generalization operation happens, 
 the extrusions of the involved areas stop;
 then, the newly generated areas take the place and start to extrude.
 On this basis, the map at any scale can be generated by slicing the SSC 
-with a horizontal plane.
+with a horizontal plane at a corresponding $z$-axis.
 That is to say, the scale becomes the third dimension of the map in the SSC
 (\eg~\fig\ref{fig:ssc_smooth_only}).
 Furthermore, they represented the smooth tGAP in the SSC.
 A typical example of the smooth generalization operation is that 
 an area merges with another one by gradually expanding over it.
-In the SSC for the smooth tGAP, 
+In the SSC of the smooth tGAP, 
 the wall starts to tilt when the expansion begins.
 Based on the SSC, \citet{Meijers2020Web} explained the principles of 
 implementing a web map of area objects.
-They showed how a vario-scale map for a large dataset 
-could be requested in parts.
-They made chunks of the data used to build the SSC
-so that they were able to send only the chunks relevant to the place
-where a map user was reading.
+They showed how to request only a part of a large dataset of a vario-scale map.
+They made chunks of the SSC data
+so that they were able to send only the chunks relevant 
+to users' interested place.
 They showed how to efficiently slice the SSC 
 to output a web map at a given scale 
 using the GPU at the client side.
 In addition to slicing the SSC with a horizontal plane,
 they could also slice the SSC with a curly surface 
 to output a map with mixed scales.
-To build the SSC, \citet{Suba2014Merge} proposed three methods 
+To build an SSC, \citet{Suba2014Merge} proposed three methods 
 to merge a pair of areas in a gradual manner, 
-which are the \emph{Single flat plane}, the \emph{Zipper}, and the \emph{Eater}.
+which are the \emph{Single flat plane}, 
+the \emph{Zipper}, and the \emph{Eater}.
 Basically, the \emph{winner} gradually expands over the \emph{loser}.
 We will use the \emph{Eater} because it works for all kinds of polygons 
 while the other two methods have limitations for some special cases.
@@ -412,7 +419,7 @@ had been spent mainly on preparing data on the server side.
 They studied the communication of map data 
 between the server side and the client side.
 They proposed different strategies of assigning 
-the work of handling map data
+the work of processing map data
 according to the machine abilities of the clients.
 
 \citet{Suba2016Road} continuously generalized a planar map of road network.
@@ -421,11 +428,11 @@ Taking into account the local condition of the face
 (\eg~no compatible neighbor at the same side of the road),
 they may put the face back with a higher importance, collapse it, 
 or merge it into an adjacent face.
-In addition to the generalization, 
+In addition to the map generalization, 
 they also made statistics of the number of faces,
 the area of faces, the number of road faces, the number of road edges,
 and the number of operations (merge and split) 
-when the scale of the map is decreasing.
+when the map scale is decreasing.
 These statistics can be good indications 
 for (continuous) map generalization.
 \citet{Huang2017Matrix} utilized a matrix to guide 
@@ -451,48 +458,34 @@ should be kept according to that given scale.
 \section{Methodology}
 \label{sec:methodology}
 
-%UML?
-%Flowchart of the framework?
-
-%\subsection{Smooth Merging}
-%\label{sec:smooth_merging}
 
 In order to provide smooth merging
-so that map users can easily follow the changes,
+so that map users can easily keep track of their interested areas,
 we merge by gradually expanding an area over another area
-(see \fig\ref{fig:intro}q).
-This expansion can be visualized based on 
-slicing the space-scale cube (SSC) shown in
-\fig\ref{fig:ssc_smooth_only}a.
+(see \fig\ref{fig:intro}r).
+This expansion can be realized 
+by slicing the space-scale cube (SSC) shown in
+\fig\ref{fig:ssc_smooth_only}b.
 %For example, \figs\ref{fig:smooth_merging}a,
 %\ref{fig:smooth_merging}b, and \ref{fig:smooth_merging}c
 %are respectively obtained from slicing the cube 
 %at the bottom, the middle, and the top.
-The details of slicing a cube can be found in \citet{Meijers2020Web}.
-The SSC of \fig\ref{fig:ssc_smooth_only} was built 
+The details of slicing an SSC are illustrated in \citet{Meijers2020Web}.
+The SSCs of \fig\ref{fig:ssc_smooth_only} was built 
 based on the \emph{Eater} of \citet{Suba2014Merge}.
 The Eater was used because it provides a solution 
 for an area with any kind of shape, which is more robust than
 \emph{Single flat plane} and \emph{Zipper} \citep{Suba2014Merge}.
-%Note that the common boundary of the two areas disappears
-%very shortly after the expansion starts.
-%That is, the common boundary exists only in 
-%\fig\ref{fig:smooth_merging}a but not in
-%\figs\ref{fig:smooth_merging}b,
-%\ref{fig:smooth_merging}c, or \ref{fig:smooth_merging}d.
-
-
 
 
 We define an \emph{event} as a single generalization operation, 
 such as merging an area into a neighbor.
 For example, \fig\ref{fig:intro}e is obtained from 
-\fig\ref{fig:intro}d by processing one merging event,
-where the arrow in \fig\ref{fig:intro}d indicate the merging.
+\fig\ref{fig:intro}d by processing one merging event.
 Similarly, \fig\ref{fig:intro}l is obtained from 
 \fig\ref{fig:intro}k by processing two merging events.
 We define a \emph{step} as 
-a set of events happening at the same interval of animation time.
+a set of events happening at the same animation duration.
 For example, 
 \fig\ref{fig:intro}e is obtained from 
 \fig\ref{fig:intro}d by processing a step with one merging event.
@@ -501,19 +494,12 @@ For example,
 In our method, a step is completely processed 
 before the next step takes place (all sequential).
 We define a \emph{state} as the point when a step starts or finishes.
-For example, there are seven states in the merging sequence of \figs\ref{fig:intro}d--j
+For example, there are seven states 
+in the merging sequence of \figs\ref{fig:intro}d--j
 (\ie~states 0, 1, 2, 3, 4, 5, and 6, from bottom to top)
 and five states in the merging sequence of \figs\ref{fig:intro}k--o 
 (\ie~states 0, 2, 4, 5, and 6).
 The value of a state is also the total number of events processed so far.
-
-%\begin{figure}[tb]
-%\centering
-%\includegraphics[page=1]{greedy_algorithm}
-%\caption{Each path shows a step. 
-%A step consists of one or more events (generalization operations).}
-%\label{fig:event_and_step}
-%\end{figure}
 
 
 We require that 
@@ -527,50 +513,51 @@ we must update the common boundaries with the surrounding adjacent areas.
 If an adjacent area is involved in another merging event,
 then it is complicated to update the adjacent area's boundaries
 for the two merging events.
-Second, users can understand the events more easily 
-than merging several areas into a single one,
-where the latter is a traditional way of merging.
-In order to realize the requirement, during the processing 
-we block the neighbors of the areas involved in merging events.
+Second, users can keep track of their interested areas more easily
+than merging several areas into a single one.
+In order to realize the requirement,
+we block the neighbors of the areas once we have found an event.
 We show a greedy algorithm to find the parallel merging events for each step
 in \sect\ref{sec:greedy_algo}.
-Then, we integrate the parallel merging events into the tGAP databse tables
+Then, we integrate the events into the tGAP databse tables
 (\sect\ref{sec:integrate_tgap}),
 followed by integrating the events into the SSC 
 (\sect\ref{sec:integrate_ssc}).
-In \sect\ref{sec:snap}, we show how to snap the zooming to existing states
+In \sect\ref{sec:snap}, we show how to snap the zooming to valid states
 to avoid half-way merging animation.
 In \sect\ref{sec:zooming_duration}, we define 
-the animation time of zooming from one state to another state.
+the animation duration of zooming from one state to another state.
 
 \subsection{A Greedy Algorithm}
 \label{sec:greedy_algo}
 
-In the greedy algorithm, we need to obtain the most compatible neighbor 
-for a given area.
+In the greedy algorithm, 
+we need to obtain the most compatible neighbor for a given area.
 There are many ways of defining the most compatible neighbor.
-For example, \citet{Cheng2006} proposed three ways, i.e.,
+For example, \citet{Cheng2006} proposed three choices, i.e.,
 the neighbor has the largest size, 
 shares the longest boundary with the least important area,
-or is has the closest class to the least important area. 
+or has the closest class to the least important area. 
 \citet{Peng2017AStar} proposed that 
 the most compatible neighbor should have a close classification
 to the least important area
 and the combination of the two areas should be compact;
 they defined the class distance based on a binary tree
 according to the codes of the classes.
-We currently consider the least important area 
-as the smallest area on the map,
-and we consider the most compatible neighbor
-as the one shares the longest common boundary 
-with the least important area.
-%This is different from earlier implementation, 
-%where the compatibility of neighbours was defined 
-%based on *both* the length of the common boundary and 
-%the class of the neighbouring polygon. 
-%Here, we could also involve the compactness of the result 
-%into the equation for deciding 
-%which neighbour is best (iff important that we want compact regions)
+We define the importance and the compatibility 
+the same as \citet{vanOosterom2005}; see \sect\ref{sec:realted_work}.
+Currently, we have not investigated on 
+how to define a weight for a classification,
+so we assign value~$1$ to the weights of all the classes.
+As a result, the least important area is the one with smallest size.
+We defined the compatibility of two classes 
+based on the classification codes 
+because the codes indeed imply a hierarchy.
+\appx\ref{appx:create_tables} shows our implementation of
+computing the weight values and the classification compatibilities.
+By the implementation, the values are 
+stored in tables of PostgreSQL database.
+
 
 \fig\ref{fig:greedy_framework} shows the flowchart of our greedy algorithm.
 The process starts with state~$s=0$ and a detailed map of area objects, $|M_0|$.
@@ -582,7 +569,7 @@ $r_\mathrm{parallel}$ is in the range from~$0\%$ to~$100\%$,
 which means~$r_\mathrm{parallel} \in [0,1]$.
 Expression~$|M_s|$ denotes the number of area objects of the map at state~$s$.
 If there is more than one area ($|M_s|>1$),
-then we can start to find merging events.
+then we start finding merging events.
 We first compute the number of areas that we expect to merge by
 \begin{equation}
 \label{eq:n_target}
@@ -590,7 +577,7 @@ n_\mathrm{target} =
 \lceil r_\mathrm{parallel} \cdot |M_s| \rceil,
 \end{equation}
 where the ceiling function guarantees~$n_\mathrm{target}\ge 1$.
-That is to say, we need to find at least one event for each step.
+That is to say, we find at least one event for each step.
 When~$n_\mathrm{target} > 1$, however,
 we cannot always find~$n_\mathrm{target}$ events
 because some areas may be blocked as explained before
@@ -613,15 +600,14 @@ to represent the number of events that actually happened within the step.
 \includegraphics[page=2]{methodology}
 \caption{The process of finding parallel merging events for a step.
     (a) From all the free areas,
-	the least important one (the smallest one) is selected to merge into
-	its most compatible neighbor (the one shares the longest common boundary).
+	the least important one is selected to merge into
+	its most compatible neighbor.
     The arrow indicates the merging.
-	Then the surrounding areas are blocked (marked by the cross).
+	Then the surrounding areas are blocked (marked by the crosses).
     Note that the area shares only a vertex with the least important area 
-    does not need to be blocked.
+    is not blocked.
 	(b) Next, the least important area from the remaining free areas
-	is selected to merge with the most compatible neighbor
-	(the arrow indicates the merging),
+	is selected to merge with the most compatible neighbor,
 	and the surrounding areas are also blocked.
 }
 \label{fig:blocked_polygons}
@@ -631,34 +617,35 @@ If we have not found $n_\mathrm{target}$ events
 ($n_\mathrm{event} < n_\mathrm{target}$)
 and there are still free areas,
 then we go on looking for merging events.
+We select the least important area~$a_\mathrm{least}$
+from the free areas.
 An area is \emph{free} if 
 it is not involved in an event and is not blocked.
-We select the least important area~$a_\mathrm{least}$
-from the set of free areas.
-We also obtain $a_\mathrm{least}$'s 
+We also find~$a_\mathrm{least}$'s 
 most compatible neighbor~$a_\mathrm{nbr}$.
 If area~$a_\mathrm{nbr}$ is also free, 
-we define an event of areas~$a_\mathrm{least}$ and~$a_\mathrm{nbr}$,
-and increase the number of events, $n_\mathrm{event}$, by 1.
-We also block the surrounding neighbors of $a_\mathrm{least}$ and $a_\mathrm{nbr}$
+we define an event of areas~$a_\mathrm{least}$ and~$a_\mathrm{nbr}$.
+Then, we increase the number of events, $n_\mathrm{event}$, by 1.
+We block the surrounding neighbors of~$a_\mathrm{least}$ and~$a_\mathrm{nbr}$
 (see \fig\ref{fig:blocked_polygons}a).
-Then, we continue to find more merging events
-(see \fig\ref{fig:blocked_polygons}b).
 If area~$a_\mathrm{nbr}$ is not free,
 then it must be blocked because of the previously found events.
 In this case, we block $a_\mathrm{least}$ for now
 so that areas~$a_\mathrm{least}$ and~$a_\mathrm{nbr}$ 
 may merge in the next step.
+Then, we continue to find more merging events and to block more areas
+(see \fig\ref{fig:blocked_polygons}b).
 
 If we have found~$n_\mathrm{target}$ events 
 or there is no free area anymore,
 then finding merging events of the step finishes.
-We parallelly merge all the pairs of areas of the events,
+We parallelly merge all the pairs of areas of the found events
+to generate new areas,
 free all the blocked areas,
 increase state~$s$ by value~$n_\mathrm{event}$,
 and create map~$M_s$ based on the new areas and the freed areas.
 Then, finding merging events for the next step starts.
-This interation of finding completes 
+This iteration of finding completes 
 until there is only one area left on the map ($|M_s|=1$).
 The merging events will be stored as records in tGAP database tables
 (see \fig\ref{fig:uml_tgap}).
@@ -679,24 +666,10 @@ In the face table, property \emph{pip\_geometry}
 stores a point (usually the center) in the face (polygon).
 The geometry of a face can be obtained by calling function \emph{getGeometry()}.
 We do not store the face geometry because we want to avoid redundancy,
-as the edges already stores sequences of points.
+as the edges already stores the sequences of points.
 }
 \label{fig:uml_tgap}
 \end{figure}
-
-
-
-%\begin{figure}[tb]
-%\centering
-%\includegraphics[page=2]{blocked_polygons}
-%\caption{A sequence of merging steps obtained by our greedy algorithm,
-%	where parallel parameter~$r_\mathrm{parallel}$ is set to~$0.3$.
-%    Note that~$\mathrm{state}=1$ does not exist in this merging sequence
-%    while step number increases by~$1$ each time.
-%	The arrows in the subfigures indicate merging events.
-%}
-%\label{fig:sequence_greedy}
-%\end{figure}
 
 
 
@@ -716,31 +689,32 @@ We add columns \emph{state\_low} and \emph{state\_high} into the table
 so that it is easy to see when a face should appear or disappear 
 (see \tbls\ref{tbl:face_tgap}a and~\ref{tbl:face_tgap}b,
 where all other columns, except face\_id, are hidden).
-When the map is zoomed out, a face should appear
-when the slicing arrives at the state\_low value,
+For zooming out, a face should appear
+when the slicing arrives at the state\_low,
 and the face should disappear
-when the slicing arrives at the state\_high value.
+when the slicing arrives at the state\_high.
 Comparing between the tables of single-event merging 
 (\figs\ref{fig:intro}d--j)
 and parallel-event merging (\figs\ref{fig:intro}k--o),
-we observed some differences.
+we observed some differences of the values.
 For example, the state\_high values of faces~1 and~2 are changed from~1 to~2
 (see \tbl\ref{tbl:face_tgap}).
 Also, the state\_low value of face~8 is changed from~1 to~2
 (see \tbl\ref{tbl:face_tgap}).
-The columns and records of both the edge table and the face-hierarchy table 
+Similarly to the face tables, 
+the columns and records of both the edge table and the face-hierarchy table 
 will be changed accordingly.
 
 
 \begin{table}[tb]
 \caption{Some columns of the face tables. 
-    Columns state\_low, state\_expand, and state\_low show the states 
+    Columns state\_low, state\_merge, and state\_low show the states 
     when the faces appear, when the faces start to disappear, and
     when the faces completely disappear.    
     In table~(b), the different values from table~(a) are underlined.
-    Column state\_expand is not really stored in the database.
+    Column state\_merge is not really stored in the database.
     We show the column so that it is easy to see the differences 
-    between the state\_low values and the state\_expand values.
+    between the state\_low values and the state\_merge values.
     }
 \label{tbl:face_tgap}
 \begin{subtable}{0.48\textwidth}
@@ -749,7 +723,7 @@ will be changed accordingly.
 \centering
 \begin{tabular}{cccc}
 \toprule
-face\_id& state\_low    & state\_expand & state\_high \\ \midrule
+face\_id& state\_low    & state\_merge & state\_high \\ \midrule
 1       &     0         &     0         &     1       \\
 2       &     0         &     0         &     1       \\
 3       &     0         &     1         &     2       \\ 
@@ -775,7 +749,7 @@ face\_id& state\_low    & state\_expand & state\_high \\ \midrule
 \centering
 \begin{tabular}{cccc} %\underbar{2}
 \toprule
-face\_id & state\_low   & state\_expand & state\_high \\ \midrule
+face\_id & state\_low   & state\_merge & state\_high \\ \midrule
 1       &     0         &     0         &\underbar{2} \\
 2       &     0         &     0         &\underbar{2} \\
 3       &     0         & \underbar{2}  &\underbar{4} \\ 
@@ -799,8 +773,8 @@ face\_id & state\_low   & state\_expand & state\_high \\ \midrule
 \subsection{Integrating the parallel events into the SSC}
 \label{sec:integrate_ssc}
 
-Recall that we merge a pair of areas by expanding one over 
-the less important one.
+Recall that we merge a pair of areas by expanding over 
+the less important area from the neighbor.
 The Eater of \citet{Suba2014Merge} is used to 
 triangulate the less important area and to tilt the triangles.
 Then the tilted triangles are integrated into the SSC
@@ -809,50 +783,50 @@ so that we can slice the SSC to achieve smooth merging.
 For the case of single-event merging,
 if a pair of areas have state\_high value~$s_\mathrm{high}$,
 then the merging animation 
-always starts at state~$s_\mathrm{expand}=s_\mathrm{high}-1$.
+always starts at state~$s_\mathrm{merge}=s_\mathrm{high}-1$
+(see \tbl\ref{tbl:face_tgap}a).
 The less important area completely disappears
 at state~$s_\mathrm{high}$.
-In the face table, a row will be added 
-to record the new area, and its state\_low value will be~$s_\mathrm{high}$.
+In the face table, a row will be added to record the new area, 
+and its state\_low value will be~$s_\mathrm{high}$.
 The new area takes the combined place of the pair of areas.
 Take \ref{fig:intro} as an example, 
 area~1 is merged into area~2 (\figs\ref{fig:intro}d), 
 and area~8 is generated to take the combined place (\figs\ref{fig:intro}e).
 The tilted triangle is the one spans 
-from $z= 0$ to $z=100$ (\ie~from state~0 to state~1)
+from~$z= 0$ to~$z=100$ (\ie~from state~0 to state~1)
 in \fig\ref{fig:ssc_smooth_only}a.
-In \tbl\ref{tbl:face_tgap}a, we see that
+In \tbl\ref{tbl:face_tgap}a, 
 the state\_low value of area~8 is 1,
 which is the state\_high value of areas~1 and~2.
-Note that the state\_low values of the two areas do not matter 
-because those values respectively indicate the states that
-the two areas appear;
-those values can be much smaller 
-than value~$s_\mathrm{high}-1$.
+%Note that the state\_low values of the two areas do not matter 
+%because those values respectively indicate the states that
+%the two areas appear;
+%those values can be much smaller 
+%than value~$s_\mathrm{high}-1$.
 
 For the case of parallel-event merging,
 if a step consists of~$n_\mathrm{event}$ events and 
 the step finishes at state~$s_\mathrm{high}$, then the step starts 
-at state~$s_\mathrm{expand}=s_\mathrm{high} - n_\mathrm{event}$.
-The reason is that if the $n_\mathrm{event}$ events 
+at state~$s_\mathrm{merge}=s_\mathrm{high} - n_\mathrm{event}$.
+The reason is that if the~$n_\mathrm{event}$ events 
 would happen sequentially (\ie~single-event merging),
 then they would take place 
 from state~$s_\mathrm{high} - n_\mathrm{event}$ to state~$s_\mathrm{high}$.
 When all the events take place parallelly in the same step, 
-each of the events can share
-its time duration of expansion animation.
+each of the events can share its merging duration.
 %there is a less important area in each of the parallel events of a merging step.
 %If the number of parallel events is~$n_\mathrm{event}$,
 %then there are~$2n_\mathrm{event}$ areas 
 %with the same state\_high value, say,~$s_\mathrm{high}$
 %because each merging event involves two areas.
 %The merging animations of all the parallel events
-%start at state~$s_\mathrm{expand}=s_\mathrm{high} - n_\mathrm{event}$
+%start at state~$s_\mathrm{merge}=s_\mathrm{high} - n_\mathrm{event}$
 %and finishes at state~$s_\mathrm{high}$.
 %By definition, the parallel events of a merging step 
 %happen during the same animation time.
 %In other words, the areas involved in those parallel events have 
-%the same state\_expand value ($s_\mathrm{expand}$) and 
+%the same state\_merge value ($s_\mathrm{merge}$) and 
 %the same state\_high value ($s_\mathrm{high}$).
 %The reverse is also true.
 %If some areas have the same state\_high value,
@@ -863,113 +837,99 @@ its time duration of expansion animation.
 %Thus, the merging events finishing at the same state cannot from different steps.
 %of these areas 
 %will finish at state~$s_\mathrm{high}$,
-%and no merging event will start earlier or later than state~$s_\mathrm{expand}$
+%and no merging event will start earlier or later than state~$s_\mathrm{merge}$
 %because we required that the next step starts only when a step stops.
-Given the fact that the animation time for zooming 
-between state~$s_\mathrm{expand}$ and state~$s_\mathrm{high}$ is fixed,
+%Given the fact that the merging duration for zooming 
+%between states~$s_\mathrm{merge}$ and~$s_\mathrm{high}$ is fixed,
+As a result,
 each of the parallel events has more time to take place
 than the events would happen sequentially.
-In other words, for a merging step finishes at state~$s_\mathrm{high}$,
-each of the events of the step has more time to take place 
-if there are more events happen parallelly.
+In other words, for a merging step,
+each of the events has more time to take place 
+if there are more parallel events.
 
 In order to build the SSC for parallel merging,
-we need the~$s_\mathrm{expand}$ value for each of the merging steps
-so that we know at which state 
+we need the~$s_\mathrm{merge}$ value for each of the merging steps
+so that we know from which state 
 the triangles of the less important areas should be tilted.
-A simple way is to add a column, say, \emph{state\_expand} 
-into the face table during generating the tGAP.
-Then, the states of starting expansion can be recorded into the column.
+A simple way is to add a column, say, \emph{state\_merge} 
+into the face table during generating the tGAP, 
+as done in \tbl\ref{tbl:face_tgap}.
+Then, the states of starting merging can be recorded into the column.
 However, we would like to avoid unnecessary columns to save storage.
-Therefore, we compute state\_expand values 
+Therefore, we compute state\_merge values 
 based on the state\_high values
 on the fly when building the SSC.
 As an event involves two areas,
 the number of events finishing at state~$s_\mathrm{high}$ can be calculated by
-\begin{equation}
+\begin{equation*}
 \label{eq:n_event_state}
 n_\mathrm{event} (s_\mathrm{high}) = 
 \frac{\sum\limits_{s \in S_\mathrm{high}} [s=s_\mathrm{high}]}{2},
-\end{equation}
+\end{equation*}
 where notation~$S_\mathrm{high}$ denotes the set of values
 recorded in column state\_high of the face table
-(\eg~\tbl\ref{tbl:face_tgap}b),
-and expression~$[s=s_\mathrm{high}]$ returns~$1$ if the two values are equal 
+(\eg~\tbl\ref{tbl:face_tgap}b).
+Expression~$[s=s_\mathrm{high}]$ returns~$1$ if the two values are equal 
 and returns~$0$ otherwise.
-As illustrated before, the state at which the parallel merging animations start 
+As illustrated before, the state at which the parallel merging starts 
 can be computed by
-\begin{equation}
-\label{eq:s_expand_state}
-s_\mathrm{expand} (s_\mathrm{high}) = s_\mathrm{high} - n_\mathrm{event} (s_\mathrm{high}).
-\end{equation}
+\begin{equation*}
+\label{eq:s_merge_state}
+s_\mathrm{merge} (s_\mathrm{high}) = s_\mathrm{high} - n_\mathrm{event} (s_\mathrm{high}).
+\end{equation*}
 
 
 
 Take the case of \tbl\ref{tbl:face_tgap}b for example,
-we have~$S_\mathrm{end} = \{2, 2, 4, 5, 4, 2, 2, 4, 6, 4, 5, 6\}$, 
-$n_\mathrm{event} (4) = 2$, and~$s_\mathrm{expand} (4) = 2$.
+we have~$S_\mathrm{high} = \{2, 2, 4, 5, 4, 2, 2, 4, 6, 4, 5, 6\}$, 
+$n_\mathrm{event} (4) = 2$, and~$s_\mathrm{merge} (4) = 2$.
 Therefore, there are two merging events finishing at state~$4$,
 \ie~event of merging area 3 into area~8 and 
 event of merging area~5 into area~10 
 (also see \figs\ref{fig:intro}l and~\ref{fig:intro}m).
 The merging animation takes place from state~$2$ to state~$4$.
 This merging can be also observed from 
-the two tilted faces above the two light-yellow faces 
+the two tilted triangles spanning from~$z = 200$ to~$z = 400$ 
 in \fig\ref{fig:ssc_smooth_only}b.
 In merging sequence of \figs\ref{fig:intro}d--j, 
 the animation of merging area~3 into area~8 
 takes place from state~$1$ to state~$2$
-(also see the tilted face above the light-yellow face 
-on the left-hand side of \fig\ref{fig:ssc_smooth_only}a), and 
+(also see the tilted triangle spanning from~$z = 100$ to~$z = 200$ 
+in \fig\ref{fig:ssc_smooth_only}a), and 
 the animation of merging area~5 into area~10
 takes place from state~$3$ to state~$4$
-(see the tilted face above the light-yellow face 
-on the right-hand side of \fig\ref{fig:ssc_smooth_only}a).
+(also see the tilted triangle spanning from~$z = 300$ to~$z = 400$ 
+in \fig\ref{fig:ssc_smooth_only}a).
 As a result, the animation duration of merging area~3 into area~8 of 
 sequence \figs\ref{fig:intro}k--o
 is almost twice as that of sequence \figs\ref{fig:intro}d--j.
 We say \emph{almost} because the animation duration is also dependent on 
-which state we are at
+the current state of the map
 (see \sect\ref{sec:zooming_duration}).
 
 
-%According to \tbl\ref{tbl:face_tgap}, 
-%face~1 and face~2 are merged from state~0 to state~1,
-%which is before the merging of face~5 and face~6 from state~1 to state~2.
-%According to \tbl\ref{tbl:face_tgap}b, 
-%the merging of face~1 and face~2 and the merging of face~5 and face~6
-%happen parallelly from state~0 to state~2.
-%
-%Then, the space-scale cube will be built 
-%according to the records of \tbl\ref{tbl:face_tgap}b.
 
 
 
 
 
-
-
-
-
-\subsection{Snapping to an Existing State}
+\subsection{Snapping to a Valid State}
 \label{sec:snap}
 
-When at the client side 
-using the SCC with parallel events for a zooming action
-(that is, slicing the SSC with a horizontal plane), 
-we always snap the map to an existing state.
+For a zooming action based on the SSC, 
+we always snap the map to a valid state.
 In this way, users will not see a merging operation stops half-way
 and will not see transition artifact (such as slivers).
 Take the sequence of \fig\ref{fig:intro}k--o for example, 
 the merging animation should stop at 
 either \ref{fig:intro}k or \ref{fig:intro}l,
 but not at \ref{fig:intro}r.
-%Note that some states do not exist because of the parallel events.
-%For example, state~$1$ does not exist 
-%in the sequence of \fig\ref{fig:intro}k--o.
-%In such case, the merging animation should not stop at state~$1$.
-In order to snap to existing states,
-we have to communicate the valid states to the client side. 
+Note that some states are not valid because of the parallel events.
+For example, state~$1$ is not valid 
+for the sequence of \fig\ref{fig:intro}k--o.
+In order to snap to valid states,
+we have to communicate them to the client side. 
 There are multiple options. 
 The most simple one assumes that, 
 during the creation of the parallel SCC, 
@@ -980,28 +940,30 @@ In case of high value ratios ($> 0.01$),
 this assumption may not be correct. 
 We then have to communicate the valid states by sending them explicitly. 
 Because this list may get rather large,
-we compress the information of merging events and save it into 
-a JSON file (JavaScript Object Notation File).
-Then, the JSON file will be sent to the client side and uncompressed.
+we only send exceptions. 
+%a JSON file (JavaScript Object Notation File).
+%Then, the JSON file will be sent to the client side and uncompressed.
 
 
 \subsubsection{On the Server Side}
 \label{sec:snap_server}
 
-On the server side, we compute the values shown in \tbl\ref{tbl:sequence_greedy}.
-\tbl\ref{tbl:sequence_greedy} is based on the merging steps of
-\fig\ref{fig:intro}k--o,
-where parallel parameter~$r_\mathrm{parallel}$ is set to~$0.3$.
-Note that this value is extremely high, 
+On the server side, 
+we compute the values shown in \tbl\ref{tbl:sequence_greedy}.
+These values are for merging sequence of \fig\ref{fig:intro}k--o 
+(also see \tbl\ref{tbl:face_tgap}b),
+where parallel parameter~$r_\mathrm{parallel}$ was set to~$0.3$.
+Note that this parameter value is extremely high, 
 just used to explain the principle in an artificial simple example.
 The computation starts from step~$1$.
 At the beginning, there are $7$ areas on the map, \ie~$|M_0| = 7$.
 According to \eq\ref{eq:n_target},
-we expect to parallel three events ($n_{\mathrm{target},1} = 3$).
+our target it to parallel three events ($n_{\mathrm{target},1} = 3$).
 However, only two event can be paralleled in step~$1$ 
-according to the situation of \fig\ref{fig:intro}k.
+because some areas are blocked
+(see \fig\ref{fig:blocked_polygons}b).
 Therefore, we have~$n_{\mathrm{event},1} = 2$.
-The difference of the expected value and the real value
+The difference of the target value and the real value
 can be computed by
 \begin{equation}
 \label{eq:n_diff}
@@ -1058,15 +1020,15 @@ n_{\mathrm{area},i+1} = n_{\mathrm{area},i} - n_{\mathrm{event},i},
 $$
 where variable~$n_{\mathrm{area},i}$ denotes the area number 
 at the low state of step~$i$.
-Furthermore, the state\_low value, $s_{\mathrm{low},i+1}$, is the same as  
-$s_{\mathrm{high},i}$.
-Again, the target number of parallel events, $n_{\mathrm{target},i+1}$,
-can be computed by \eq\ref{eq:n_target},
-the number of actual parallel events can be obtained from the greedy algorithm,
-the value of difference, $n_{\mathrm{diff},i+1}$, 
-can be computed by \eq\ref{eq:n_diff}, 
-and the state\_high value, $s_{\mathrm{high},i+1}$, 
-can be computed by \eq\ref{eq:state_high}.
+Furthermore, the state\_low value of step~$i+1$ (\ie~$s_{\mathrm{low},i+1}$) 
+is the same as the state\_high value of step~$i$ (\ie~$s_{\mathrm{high},i}$).
+Again, the target number of parallel events (\ie~$n_{\mathrm{target},i+1}$)
+is computed by \eq\ref{eq:n_target},
+the number of actual parallel events is obtained from the greedy algorithm,
+the value of difference (\ie~$n_{\mathrm{diff},i+1}$) 
+is computed by \eq\ref{eq:n_diff}, 
+and the state\_high value (\ie~$s_{\mathrm{high},i+1}$) 
+is computed by \eq\ref{eq:state_high}.
 The computation of all the steps starts from step~$i=1$ and 
 finishes until only one area left on the map.
 As a result, we have all the values of \tbl\ref{tbl:sequence_greedy}.
@@ -1091,18 +1053,26 @@ As a result, we have all the values of \tbl\ref{tbl:sequence_greedy}.
 %we can further compute $n_{\mathrm{target},i+1}$ and obtain $n_{\mathrm{event},i+1}$.
 %This process starts from step~$i=1$ and ends until only one area left.
 
-Now, we have a column of $n_\mathrm{diff}$ values.
-Among them, we record the non-zero values and the corresponding steps in a list.
-Take \tbl\ref{tbl:sequence_greedy} for example,
-the list is $[[1, 1]]$.
-The content of the JSON file is as following.
-\begin{verbatim}
-                {
-                    "face_num": 7,
-                    "parallel_param": 0.3,                    
-                    "step_eventdiff": [[1, 1]]
-                }
-\end{verbatim}
+Now, we have a column of~$n_\mathrm{diff}$ values.
+Among them, we record the exceptions (\ie~the non-zero values) 
+and the corresponding steps in a list.
+The \emph{exception list} is~$[[1, 1]]$ for the example of \tbl\ref{tbl:sequence_greedy}.
+For the pair of values in the inner square brackets,
+the first one represents the step,
+and the second value represents~$n_\mathrm{diff}$.
+The exception list, the number of faces, and the parallel parameter 
+will be sent to the client side.
+ 
+%Take \tbl\ref{tbl:sequence_greedy} for example,
+%the list is $[[1, 1]]$.
+%The content of the JSON file is as following.
+%\begin{verbatim}
+%                {
+%                    "face_num": 7,
+%                    "parallel_param": 0.3,                    
+%                    "step_eventdiff": [[1, 1]]
+%                }
+%\end{verbatim}
 
 
 %We compress those values as the form of 
@@ -1143,44 +1113,48 @@ The content of the JSON file is as following.
 
 
 When a user opens our web map,
-the JSON file will be sent to the client side.
-We can unpack the content of entry ``step\_eventdiff'' and 
-get the list of $n_\mathrm{diff}$ values~$[1, 0, 0, 0]$.
+the client side receives the exception list, the number of faces, 
+and the parallel parameter from the server side.
+%the JSON file will be sent to the client side.
+%We can unpack the content of entry ``step\_eventdiff'' and 
+%get the list of $n_\mathrm{diff}$ values~$[1, 0, 0, 0]$.
 Starting from step~$i=1$,
 we can again compute~$n_{\mathrm{target},i}$ according to \eq\ref{eq:n_target},
-where parallel parameter~$r_\mathrm{parallel}=0.3$ 
-and face number~$n_{\mathrm{area},1} = 7$
-can be obtained also from the JSON file.
+%where parallel parameter~$r_\mathrm{parallel}=0.3$ 
+%and face number~$n_{\mathrm{area},1} = 7$
+%can be obtained also from the JSON file.
 Then, we can compute the actual number of parallel events by
 \begin{equation*}
 \label{eq:n_event_step}
 n_{\mathrm{event},i} = n_{\mathrm{target},i} - n_{\mathrm{diff},i},
 \end{equation*}
-which is an inverse function of \eq\ref{eq:n_diff}.
+where value~$n_{\mathrm{diff},i}$ is~$0$ if no value of step~$i$
+exists in the exception list.
+Note that \eq\ref{eq:n_event_step} 
+is an inverse function of \eq\ref{eq:n_diff}.
 The computed~$n_\mathrm{event}$ values 
-should be the same as the values before compressing
+will be the same as the values on the server side
 (see column~$n_\mathrm{event}$ in \tbl\ref{tbl:sequence_greedy}).
 
 
 According to the~$n_\mathrm{event}$ values,
 we can compute the accumulated number of events~$L_\mathrm{event} = 
 [0, 2, 4, 5, 6]$,
-which is also the list of existing states
+which is also the list of valid states
 (see columns~state\_low and state\_high in \tbl\ref{tbl:sequence_greedy}).
 According to how much a user has zoomed,
-a target scale, say, $1:S_\mathrm{t}$ can be computed.
+the target scale, say, $1:S_\mathrm{t}$ can be computed.
 %According to \citet{Huang2016Webmap},
 %the number of merging events that should be processed can be computed by
 \citet{Huang2016Webmap} suggested that 
 the average density of the original map should be preserved 
-for the smaller-scale map after a zooming-out operation.
+for a smaller-scale map.
 Their suggestion is based on the assumption that 
 the area density of the base map is well designed, which is reasonable.
 We use variable~$A_\mathrm{real}$ to denote the total areal size of 
 all the area objects in reality.
-Then, the size on screen at scale~$S_\mathrm{t}$ 
-is~$A_\mathrm{real} \big/ S_\mathrm{t}$,
-where~$1:S^2_\mathrm{t}$ is the scale that we want to zoom to.
+Then, the size on screen at scale~$1:S_\mathrm{t}$ 
+is~$A_\mathrm{real} \big/ S^2_\mathrm{t}$.
 In order to keep the density, we require
 \begin{equation}
 \label{eq:equal_density}
@@ -1188,11 +1162,10 @@ In order to keep the density, we require
 \frac{N_\mathrm{b}-E_\mathrm{t}}{A_\mathrm{real} \big/ S^2_\mathrm{t}},
 \end{equation}
 where parameter~$N_\mathrm{b} = |M_0|$ 
-is the number of area objects on the base map,
+is the number of areas on the base map,
 parameter~$S_\mathrm{b}$ is the scale denominator of the base map,
 and variable~$E_\mathrm{t}$ is the total number of events 
-happening from the base map (at scale~~$1:S_\mathrm{b}$) 
-to the map at scale~$1:S_\mathrm{t}$.
+happening from the base map to the map at scale~$1:S_\mathrm{t}$.
 \eq\ref{eq:equal_density} yields
 \begin{equation}
 \label{eq:E_t}
@@ -1200,7 +1173,7 @@ E_\mathrm{t} = N_\mathrm{b} \left(1-\frac{S^2_\mathrm{b}}{S^2_\mathrm{t}}\right)
 \end{equation}
 In our example regarding to list~$L_\mathrm{event}$,
 if event number~$E_\mathrm{t} \le 0$, the base map should be presented;
-if $E_\mathrm{t} \ge 6$, the last value of list~$L_\mathrm{event}$,
+if $E_\mathrm{t} \ge 6$ (\ie~the last value of list~$L_\mathrm{event}$),
 the map with the final single area should be presented.
 Otherwise, if $0<E_\mathrm{t} < 6$, we snap event number~$E_\mathrm{t}$ 
 to the closest value (measured in events) of list~$L_\mathrm{event}$,
@@ -1211,7 +1184,7 @@ can be computed by
 \label{eq:S_t_snap}
 S_\mathrm{t,snap} = S_\mathrm{b} \sqrt{\frac{N_\mathrm{b}}{N_\mathrm{b}-E_\mathrm{t,snap}}}.
 \end{equation}
-Note that \eq\ref{eq:S_t_snap} is an inverse function of \eq\ref{eq:E_t}.
+where this equation is an inverse function of \eq\ref{eq:E_t}.
 At the end of the zooming action, 
 the map will snap to state~$s_\mathrm{t,snap}$
 at scale~$1:S_\mathrm{t,snap}$.
@@ -1224,32 +1197,39 @@ the same value as event number~$E_\mathrm{t,snap}$.
 
 
 
-\subsection{Zooming Duration of a Step}
+\subsection{Animation Duration of a Step}
 \label{sec:zooming_duration}
 
 When users are zooming from a scale to another scale,
 some steps take place to change the map from a state to another one.
-The changing duration of each event 
-depends on the number of events between the two states,
-the \emph{zooming factor}, and the \emph{zooming duration}.
-On the one hand, the changing duration should not be too short 
-as then there is no time to display a merging animation at all. 
-On the other hand, if the changing duration takes too long, 
+We define the \emph{zooming duration} as the amount of 
+animation time that the map reacts to one ``click'' of the mouse wheel.
+The zooming duration often is the sum of 
+the \emph{animation durations} of several merging steps.
+The animation duration of each event depends on 
+the number of events between the two states,
+the \emph{zooming factor} of the scale, and 
+the \emph{zooming duration}.
+On the one hand, the animation duration should not be too short 
+as then the animation will be too fast. 
+On the other hand, if the animation takes too long, 
 the map will not be interactive, and users will be ``frustrated''.
 \citet[][\sect4.3]{Meijers2020Web} 
 have introduced the zooming factor and the zooming duration.
 They allowed users to set the two parameters,
 which is also the case in this paper
 (see \fig\ref{fig:interaction_settings}).
-This paper formalizes the relationship.
+This section formalizes the relationship of the animation duration,
+the zooming duration, the zooming factor, and the number of events.
 In a zooming duration, there can be many merging steps,
 no matter single-event merging or parallel-event merging.
 The following calculation is based on the setting that
 a zooming duration is divided equally by its merging steps
-(\citet[][\sect6.7]{Suba2017Thesis} showed some other possible settings);
-the steps happen sequentially and take the same amount of time.
-Note that the steps from different zooming durations may take place different
-amounts of time.
+(\citet[][\sect6.7]{Suba2017Thesis} showed some other possible settings).
+In other words,
+the steps happen sequentially and take the same amount of animation duration.
+Note that the steps from different zooming durations 
+may have different animation durations.
 %In the following calculation, 
 %we assume that we can always find the target number 
 %(see \eq\ref{eq:n_target})
@@ -1262,50 +1242,51 @@ amounts of time.
 \includegraphics[page=6,scale=0.7]{methodology}
 \caption{Our panel of settings. 
 Among others, one can set how much to zoom when scrolling the mouse wheel 
-and set the animation duration of the zooming.}
+and set the zooming duration.}
 \label{fig:interaction_settings}
 \end{figure}
 
 
 Let~$f_\mathrm{zoom}$ be the zooming factor, and 
 let~$t_\mathrm{zoom}$ be the zooming duration.
-Let~$1:S_\mathrm{t,snap}$ be the current snapped scale, and 
+Let~$1:S_\mathrm{t,snap}$ be the snapped scale before the zooming operation, and 
 let~$1:S_\mathrm{o}$ be the zoomed out scale (not snapped yet).
-When zooming out, we define the relationship 
+For zooming out, we define the relationship 
 between the two scale denominators as
 \begin{equation}
 \label{eq:S_o}
 S_\mathrm{o} = S_\mathrm{t,snap} (1 + f_\mathrm{zoom}).
 \end{equation}
-We can also compute the number of events at scale~$1:S_\mathrm{o}$, 
-from the base map, by
+For scale~$1:S_\mathrm{o}$, we compute the number of events
+that should be processed from the base map by
 \begin{equation*}
 \label{eq:E_o}
-E_\mathrm{o} = N_\mathrm{b} \left(1-\frac{S^2_\mathrm{b}}{S^2_\mathrm{o}}\right).
+E_\mathrm{o} = N_\mathrm{b} \left(1-\frac{S^2_\mathrm{b}}{S^2_\mathrm{o}}\right),
 \end{equation*}
+which is according to \eq\ref{eq:E_t}.
 As the value of~$E_\mathrm{o}$ may be not an integer, 
-we also snap it to an existing state
-(see \sect\ref{sec:snap_client})
-so that we have a snapped value~$E_\mathrm{o,snap}$.
-Then, we can computed scale denominator~$S_\mathrm{o,snap}$
+we snap it to a valid state
+(see \sect\ref{sec:snap_client}),
+and we have a snapped value~$E_\mathrm{o,snap}$.
+Then, we compute scale denominator~$S_\mathrm{o,snap}$
 by \eq\ref{eq:S_t_snap}.
 According to \eq\ref{eq:E_t}, we have merged~$E_\mathrm{t,snap}$ areas 
-when we arrive at scale~$1:S_\mathrm{t,snap}$.
+when arriving at scale~$1:S_\mathrm{t,snap}$.
 The event number of zooming out
-from scale~$1:S_\mathrm{t,snap}$ to scale~$1:S_\mathrm{o}$ is
+from scale~$1:S_\mathrm{t,snap}$ to scale~$1:S_\mathrm{o,snap}$ is
 %$
-\begin{equation}
+\begin{equation*}
 \label{eq:N_event}
 N_\mathrm{event} = 
 E_\mathrm{o,snap} - E_\mathrm{t,snap}.
-\end{equation}
+\end{equation*}
 %$
 %Accordingly, we can compute scale denominator~$S_\mathrm{o,snap}$
 %by \eq\ref{eq:S_t_snap}
-Time duration~$t_\mathrm{zoom}$ is for zooming from 
+Recall that zooming duration~$t_\mathrm{zoom}$ is for zooming from 
 from scale~$1:S_\mathrm{t,snap}$ to scale~$1:S_\mathrm{o}$.
-Now we are zooming to~$1:S_\mathrm{o,snap}$,
-so we adjust the time duration to
+As the map is actually zooming to~$1:S_\mathrm{o,snap}$,
+we adjust the zooming duration to
 \begin{equation*}
 \label{eq:E_i}
 t_\mathrm{snap}= t_\mathrm{zoom} 
@@ -1322,7 +1303,7 @@ t_\mathrm{snap}= t_\mathrm{zoom}
 That is to say, the~$E_\mathrm{o,snap} - E_\mathrm{t,snap}$ events will happen 
 in time duration~$t_\mathrm{snap}$.
 If the events happen sequentially (each step consists of a single event), 
-then the duration of each event is
+then the animation duration of each event is
 \begin{equation}
 \label{eq:t_single}
 t_\mathrm{single}   = \frac{t_\mathrm{snap}}{N_\mathrm{event}} 
@@ -1332,8 +1313,7 @@ t_\mathrm{single}   = \frac{t_\mathrm{snap}}{N_\mathrm{event}}
 If we parallel these events, 
 then we will have fewer steps and 
 each event has more time to take place.
-Let~$n_\mathrm{step}$ be the step number of the parallel events 
-in the same zooming duration.
+Let~$n_\mathrm{step}$ be the number of steps in a zooming duration.
 If we are lucky enough so that
 expression~$r_\mathrm{parallel} \cdot |M_s|$ of \eq\ref{eq:n_target}
 always returns an integer, 
@@ -1345,39 +1325,45 @@ We have
 N_\mathrm{t,snap} (1-r_\mathrm{parallel})^{n_\mathrm{step}} = N_\mathrm{o,snap},
 \end{equation*}
 where~$N_\mathrm{t,snap} = N_\mathrm{b}- E_\mathrm{t,snap}$ 
-and~$N_\mathrm{o,snap} = N_\mathrm{b}- E_\mathrm{o,snap}$.
-Therefore, we have
+is the number of areas at scale~$1:S_\mathrm{t,snap}$,
+and~$N_\mathrm{o,snap} = N_\mathrm{b}- E_\mathrm{o,snap}$
+is the number of areas at scale~$1:S_\mathrm{o,snap}$.
+Then, the number of steps can be computed by
 \begin{equation*}
 %\label{eq:n_event}
 n_\mathrm{step} = \log_{1-r_\mathrm{parallel}} 
     \frac{N_\mathrm{o,snap}}{N_\mathrm{t,snap}}.
 \end{equation*}
-Each of the parallel events has time
+Because the steps happen sequentially,
+each of the steps in the zooming duration has
+animation duration
 \begin{equation}
 \label{eq:t_parallel}
-t_\mathrm{parallel} = \frac{t_\mathrm{snap}}{n_\mathrm{step}}.
+t_\mathrm{parallel} = \frac{t_\mathrm{snap}}{n_\mathrm{step}},
 \end{equation}
+which is also the animation duration of each of the parallel events.
 Putting \eqs\ref{eq:t_single} and~\ref{eq:t_parallel} together,
 we have
-\begin{equation}
+\begin{equation*}
 \label{eq:t_compare}
 t_\mathrm{parallel} = t_\mathrm{single}  \frac{N_\mathrm{event}}{n_\mathrm{step}}.
-\end{equation}
-As~$N_\mathrm{event}$ is for sure larger than or equal to~$n_\mathrm{step}$,
+\end{equation*}
+As~$N_\mathrm{event}$ is larger than or equal to~$n_\mathrm{step}$,
 $t_\mathrm{parallel}$ is also larger than or equal to~$t_\mathrm{single}$.
 
 
 When we zoom in back from scale~$S_\mathrm{o,snap}$ to scale~$S_\mathrm{t}$, 
 we have
-\begin{equation}
+\begin{equation*}
 \label{eq:S_i}
 S_\mathrm{t} = \frac{S_\mathrm{o,snap}}{(1 + f_\mathrm{zoom})},
-\end{equation}
+\end{equation*}
 which is the inverse function of \eq\ref{eq:S_o}.
 We will be able to snap to scale~$1:S_\mathrm{t,snap}$.
-We will use the same interval of animation time and 
+We will use the same animation duration and 
 process the same number of events and steps as we zoomed out.
-The difference is that, instead of merging, areas will bubble up.
+The difference from zooming out is that, instead of merging, 
+areas will bubble up.
 
 
 %\bigskip
@@ -1447,20 +1433,20 @@ Wavefront .obj file:
 \url{https://en.wikipedia.org/wiki/Wavefront_.obj_file},
 accessed: Jan 14, 2020.}
 %
-The OBJ file and the JSON file (described in \sect\ref{sec:snap_server}) 
-will be sent to the client 
-when a user visits our website to access the map.
+%The OBJ file and the JSON file (described in \sect\ref{sec:snap_server}) 
+%will be sent to the client 
+%when a user visits our website to access the map.
+When a user visits our website to access the map,
+some data will be sent to the client side.  
 On the client side,
-the two files are processed
+the received data will be processed
 by a prototype implemented in JavaScript.
-The processed content and some code for WebGL (Web Graphics Library)
+The processed data and some code for WebGL (Web Graphics Library)
 are submitted to GPU so that we can output the map with smooth zooming
 by slicing the SSC.
 
-
-The dataset used in this case study is a topographic map, 
-a subset of TOP10NL,
-produced by Kadaster.\footnote{%
+The dataset used in this case study is a subset of TOP10NL,
+which is a topographic map produced by Kadaster.\footnote{%
 More information about TOP10NL can be found at
 \url{https://zakelijk.kadaster.nl/-/topnl},
 accessed: Jan 14, 2020.}
@@ -1472,11 +1458,11 @@ accessed: Jan 15, 2020.}
 %
 Because the base scale is $1:10{,}000$, 
 we have~$S_\mathrm{b} = 10{,}000$ for \eq\ref{eq:S_t_snap}.
-The maximum value for event number~$E_\mathrm{snap}$ is~$13{,}237$
+The maximum value of event number~$E_\mathrm{snap}$ is~$13{,}237$
 as there are in total~$13{,}238$ areas.
 When we zoom out far enough 
 so that~$E_\mathrm{snap}$ reaches its maximum value,
-the scale denominator will arrive at~$1{,}150{,}565$
+the scale denominator will arrive at~$1{,}150{,}565.1$
 according to \eq\ref{eq:S_t_snap}.
 At that moment, all the areas are merged into one single area.
 %(see \figs\ref{fig:data}b).
@@ -1484,9 +1470,9 @@ In each step, we want to parallelly merge some proportion of the areas.
 We tried three cases: 0.1\%, 1\%, and 10\%.
 That is, parallel parameter~$r_\mathrm{parallel}=0.001, 0.01, \text{and~} 0.1$ 
 (see \sect\ref{sec:greedy_algo}).
-The three versions can be browsed online.\footnote{%
+The three versions of map can be browsed online.\footnote{%
 Our web maps can be found at
-\url{https://pengdlzn.github.io/webmaps/2020/04/merge/}.}
+\url{https://pengdlzn.github.io/webmaps/2020/05/merge/}.}
 \fig\ref{fig:web_map} shows two examples of our web map when 
 parallel parameter~$r_\mathrm{parallel}=0.01$.
 
@@ -1508,7 +1494,7 @@ parallel parameter~$r_\mathrm{parallel}=0.01$.
 \begin{subfigure}[t]{\textwidth}
 \centering
 \includegraphics[page=1]{case_study}
-\caption{}
+\caption{An overview of the map.}
 \end{subfigure}
 \newline
 \vspace{0.3cm}
@@ -1528,51 +1514,54 @@ parallel parameter~$r_\mathrm{parallel}=0.01$.
 Some statistics of the results when 
 parallel parameter~$r_\mathrm{parallel}=0.001$, $0.01$, or $0.1$ 
 are shown in \tbl\ref{tbl:parallel_param_comparison}.
-According to column~$n_\mathrm{step}$ of \tbl\ref{tbl:parallel_param_comparison},
+According to column~$N_\mathrm{step}$,
 the number of steps decreases 
-when we use a larger parallel parameter.
+when the parallel parameter increases.
+This is reasonable because more areas will be merged in each step.
 As explained in \sect\ref{sec:greedy_algo}, 
 for each merging step we iteratively select the least important area 
 and its most compatible neighbor to define a merging event; 
 then, we block the neighbors of the two areas.
 Sometimes, a least important area is already blocked 
 because of the previously found events.
-For example, this situation happens~$3{,}216$ times in total for all the steps
+This situation happens~$2{,}715$ times in total for all the steps
 when parallel parameter~$r_\mathrm{parallel}=0.01$
-(see column~$n_\mathrm{blocked}$ of \tbl\ref{tbl:parallel_param_comparison}).
+(see column~$N_\mathrm{blocked}$ of \tbl\ref{tbl:parallel_param_comparison}).
 %
 Sometimes, although a least important area is free, 
 its most compatible neighbor has been blocked 
 because of the previously found events.
-For example, this case happens~$1{,}841$ times in total for all the steps
+This case happens~$1{,}382$ times in total for all the steps
 when parallel parameter~$r_\mathrm{parallel}=0.01$
 (see column~$n_\mathrm{nbr\_blocked}$ of \tbl\ref{tbl:parallel_param_comparison}).
 %
-Apparently, when merging a larger proportion of 
-the area objects, we encounter more cases of the areas blocked.
+According to the statistics, we encounter more cases of the areas blocked
+when merging a larger proportion of the area objects.
 However, we can still reach our target number of events perfectly 
 for settings of~$r_\mathrm{parallel}=0.01$ or~$r_\mathrm{parallel}=0.001$. 
-Only when we push beyond the limit, 
+Only when we push beyond the limit (\eg~$r_\mathrm{parallel}=0.1$), 
 we can not reach the target number of events in a step 
-(and we need correction information to get at actual number of achieved events). 
-One could also question the cartographic quality 
+(and we need correction information 
+to compute the actual number of achieved events). 
+When the target number of events cannot be met, 
+one could also question the cartographic quality 
 if there is hardly any free choice when generalizing.
 
 
 \begin{table}[tb]
 \centering
 \caption{Some statistics when different parallel parameters area used 
-    (\ie~$r_\mathrm{parallel}=0.001$, $0.01$, or $0.1$).
-    Column~$n_\mathrm{step}$ records the number of steps to transit 
+    (\ie~$r_\mathrm{parallel}=0.001$, $0.01$, and $0.1$).
+    Column~$N_\mathrm{step}$ records the number of steps to transit 
     from the base map to the map with a single area.    
-    Column~$n_\mathrm{blocked}$ records the number of times
+    Column~$N_\mathrm{blocked}$ records the number of times
     when the least important area was blocked.
-    Column~$n_\mathrm{nbr\_blocked}$ records the number of times 
+    Column~$N_\mathrm{nbr\_blocked}$ records the number of times 
     when the most compatible neighbor was blocked.
 }
 \begin{tabular}{rrrr}
 \toprule
-$r_\mathrm{parallel}$   & $n_\mathrm{step}$ & $n_\mathrm{blocked}$  & $n_\mathrm{nbr\_blocked}$ \\ \midrule
+$r_\mathrm{parallel}$   & $N_\mathrm{step}$ & $N_\mathrm{blocked}$  & $N_\mathrm{nbr\_blocked}$ \\ \midrule
 0.001                   &  3{,}195          &       212             &       72                  \\
 0.01                    &  544              &   2{,}715             &  1{,}382                  \\
 0.1                     &  91               & 100{,}634             & 34{,}416                  \\ 
@@ -1604,30 +1593,27 @@ $r_\mathrm{parallel}$   & $n_\mathrm{step}$ & $n_\mathrm{blocked}$  & $n_\mathrm
 
 
 
-When parallel parameter~$r_\mathrm{parallel}= 0.001$ or~$0.01$,
-we can find the target numbers of merging events for all the steps.
-For the two cases, entry ``step\_eventdiff'' of the JSON file
-(see \sect\ref{sec:snap_server})
-records an empty list.
-For example, when~$r_\mathrm{parallel}= 0.01$,
-The content of the JSON file is as following.
-\begin{verbatim}
-                {
-                    "face_num": 13238,
-                    "parallel_param": 0.01,                    
-                    "step_eventdiff": []
-                }
-\end{verbatim}
+As we can find the target numbers of merging events for all the steps
+when parallel parameter~$r_\mathrm{parallel}= 0.001$ or~$0.01$, 
+the corresponding exceptions lists are empty.
+%For example, when~$r_\mathrm{parallel}= 0.01$,
+%The content of the JSON file is as following.
+%\begin{verbatim}
+%                {
+%                    "face_num": 13238,
+%                    "parallel_param": 0.01,                    
+%                    "step_eventdiff": []
+%                }
+%\end{verbatim}
 When parallel parameter~$r_\mathrm{parallel}= 0.1$,
-the list in for entry ``step\_eventdiff'' is  
-$[[1, 19], [2, 126], \dots, [77, 1]]$,
-which in total has~$73$ pairs of values.
+the exception list is~$[[1, 19], [2, 126], \dots, [77, 1]]$,
+which has~$73$ pairs of values.
 In reality, we would not use~$r_\mathrm{parallel}= 0.1$
 (merging~$10\%$ of the current areas)
 because it is an unrealistic high value.
-Using such a high value results in a multi-scale presentation
-(because we have a few valid states or scales),
-while we would like to have representations at almost
+Using such a high value results in a multi-scale representation
+(because we have a few valid states or scales)
+while we would like to have representations at nearly
 arbitrary scales.
 
 We set zooming factor~$f_\mathrm{zoom}=1$ and 
@@ -1637,19 +1623,19 @@ When zooming on our web maps with different parallel parameters,
 we observed that the impressions of the maps 
 based on single-event merging\footnote{%
 See the web map at
-\url{https://pengdlzn.github.io/webmaps/2020/04/merge/single-event/}.} 
+\url{https://pengdlzn.github.io/webmaps/2020/05/merge/single-event/}.} 
 and based on parallel parameter~$r_\mathrm{parallel}= 0.001$ 
 are almost the same.
 The reason is that the smooth merging happens too fast,
-and we cannot really see the animation of the expansion.
+and we cannot really see the merging animation.
 We get the feeling of smooth merging when~$r_\mathrm{parallel}= 0.01$.
 When~$r_\mathrm{parallel}= 0.1$, the smooth merging is already obvious.
-In order to show a better comparison,
+In order to show a better comparison of single-event merging 
+and parallel-event merging,
 we put two maps together (see \fig\ref{fig:comparison}),
-which are the map of single-event merging and 
-the map of parallel-event merging with~$r_\mathrm{parallel}= 0.01$.\footnote{%
+where the parallel parameter is~$0.01$.\footnote{%
 See the map of comparison at
-\url{https://pengdlzn.github.io/webmaps/2020/04/merge/0.01/comparer.html}.}  
+\url{https://pengdlzn.github.io/webmaps/2020/05/merge/0.01/comparer.html}.}  
 
 
 \begin{figure}[tb]
@@ -1659,18 +1645,18 @@ See the map of comparison at
     The map to the left of the slider is based on single-event merging,
     and the one to the right is based on parallel-event merging
     with parallel parameter~$r_\mathrm{parallel}= 0.01$.
-    The slider can be moved to show different proportions of the two maps.
+    The slider can be moved to tune the widths of the two map canvases.
 }
 \label{fig:comparison}
 \end{figure}
 
 When parallel parameter~$r_\mathrm{parallel}$ is set to~$0.1$,
-we notice a problem in the northeast corner of the map.
-That is, some tiny and relatively unimportant areas stays 
+we noticed a problem in the northeastern corner of the map.
+That is, some tiny and relatively unimportant areas stay 
 until the scale is very small
 while they should be merged much earlier.
 This is due to the fact that 
-there are many buildings in the northeast corner of the map.
+there are many buildings in the northeastern corner of the map.
 When the buildings share the same surrounding area,
 they become holes of the polygon.
 In each step, only one of the buildings will be merged into the surrounding area
@@ -1693,21 +1679,29 @@ Fortunately, we would not need to use such a big parallel parameter in reality.
 
 \subsection{Conclusion}
 %For the first time, 
-This paper parallels generalization operations,
+This paper investigates on paralleling generalization operations,
 using the merging operation as a case study. 
 The purpose of having parallel generalization operations 
 is to have smoother zooming experience later on 
-(compared to the pure sequenced individual generalization events).
+(compared to the pure sequenced individual generalization events)
+so that users can better keep their context during zooming.
 This paper develops a greedy algorithm to find parallel events of 
 merging area objects.
 Then, the parallel events are integrated into 
-the tGAP and the SSC so that the merging animations can be nicely visualized.
-This paper also proposes a strategy 
-to concisely store the number of merging events for all the steps.
+the tGAP and the SSC to nicely visualize the merging animations.
+%This paper also proposed a strategy 
+%to concisely store the number of merging events for all the steps.
 To guarantee that the merging animations always complete for zooming, 
-we manage to snap zooming operations to existing states.
-Our case study shows that 
-our approach provides smooth merging for zooming.
+we managed to snap zooming operations to valid states.
+This paper also presents a recipe 
+to define the animation duration of an event.
+According to our case study,
+the events of parallel-event merging 
+can be better observed than the events of single-event merging.
+This result shows the potential that
+users can better keep their context 
+when zooming on a map based on parallel-event operations.
+
 
 
 \subsection{Future Work}
@@ -1719,9 +1713,7 @@ Our strategy of presenting the static boundary (\ie~the exterior one)
 is that we store the polylines and 
 draw them with width, 
 where the width is computed according to the map scale.
-However, this strategy is not suitable for drawing a moving boundary
-because there can be infinitive number of versions of the moving boundary
-during zooming.
+However, this strategy is not suitable for drawing a moving boundary.
 That is why we did not draw the black common boundary in 
 \figs\ref{fig:smooth_merging}b--d.
 In order to present the moving black common boundary on map, 
@@ -1730,7 +1722,7 @@ Furthermore, we would also like the common boundary
 to be thinner and thinner during zooming out
 (see \figs\ref{fig:smooth_merging}f--j).
 It may be even better if the color of the smaller area (pink)
-changes to the color of the larger one (light yellow) smoothly.
+adapts to the color of the larger one (light yellow) smoothly.
 
 
 \begin{figure}[tb]
@@ -1767,7 +1759,7 @@ changes to the color of the larger one (light yellow) smoothly.
 
 This paper used a greedy algorithm 
 to find parallel merging events for each step.
-Alternatively, it is also possible to define merging steps 
+Alternatively, it is possible to define merging steps 
 by selecting and combining some single-event steps of a sequence found 
 by some existing methods
 (\eg~the greedy algorithm of \citet{vanOosterom2005}
@@ -1775,12 +1767,12 @@ or the \Astar algorithm of \citet[\chap2]{Peng2019Thesis}).
 
 Currently, the merging events distribute randomly on a map.
 If we are unlucky, there may be a lot of events 
-happening in users' focused region for a time duration,
-which may be too much workload for a user to follow;
-for another time duration, 
+happening in users' focused region for a zooming duration,
+which may cause the users to lose track of their interested objects;
+for another zooming duration, 
 there may be no event happening in the focused region at all.
 The strategy of blocking neighbor areas in our greedy algorithm 
-already mitigates the problem somehow.
+already mitigates the problem.
 However, it may be even better if 
 we explicitly distribute the merging events evenly, 
 then the workload for a user to follow the events is stable during the zooming.
@@ -1789,7 +1781,7 @@ Then, we could find a certain number of events in each of the regions
 according to the regions' sizes,
 which should result in an even distribution of events.
 Finally, we could compare our current greedy algorithm and 
-the algorithm considering even distribution of events.
+the algorithm considering even distribution.
 
 
 Our current event consists of only the merging operation,
@@ -1802,25 +1794,23 @@ Therefore, such kind of long and thin areas should be
 split into several parts first.
 We may integrate a split method based on the straight skeleton
 \citep{Haunert2008Skeleton}
-or the skeleton based on constrained Delaunay triangulation
+or the skeleton obtained from a constrained Delaunay triangulation
 \citep{Meijers2016Split}.
 In addition to area features, we also need to support line features 
-for these long objects (roads, river, rail) for the smaller scales.
+for these long objects (\eg~roads, river, rail) for the smaller scales.
 In order to apply appropriate generalization operators
 for a certain scale,
-we also need to extend and implement the framework 
+we need to extend and implement the framework 
 to guide our generalization choices
 \citep{Meijers2018Framework}.
 
 
-
-
 To avoid clutter of vertices for zooming out, 
-we also need to simplify the boundaries of the areas.
+it is necessary to simplify the boundaries of the areas.
 Many existing methods could be integrated into our parallel paradigm.
 \citet{Meijers2011LineSimp} proposed a method 
 to simplify the boundaries parallelly. 
-Moreover, their results are topologically safe. 
+Their results are topologically safe. 
 Another choice would be the method of \citet{ImaiIri1988},
 which is able to minimize the number of vertices 
 for a given error threshold.
@@ -1834,7 +1824,7 @@ the boundaries of the areas are morphed
 (moved smoothly and parallelly)
 between a detailed representation and a coarse representation.
 We can imagine that it is challenging to build the tilted walls.
-Furthermore, we would also like to 
+Furthermore, we would like to 
 simplify point symbols and text labels in a smooth way.
 For this purpose, we may need to integrate the ideas of
 \citet{Haunert2017Label} and \citet{sahw-oarps-ICAGW13}.
@@ -2026,7 +2016,8 @@ We will conduct some usability tests based on the experience of
 %\appendixtitles{no} %Leave argument "no" if all appendix headings stay EMPTY (then no dot is printed after "Appendix A"). If the appendix sections contain a heading then change the argument to "yes".
 %\appendix
 \appendix
-\section{Create the Table of Compatibility Values and the Table of Weights}
+\section{Create the Table of Weights and the Table of Compatibility Values}
+\label{appx:create_tables}
 \lstinputlisting[
            language=SQL,
            showspaces=false,

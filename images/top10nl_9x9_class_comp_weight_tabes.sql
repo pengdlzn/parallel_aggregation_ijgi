@@ -1,3 +1,9 @@
+DROP TABLE IF EXISTS public.class_weights;
+CREATE TABLE public.class_weights (
+  code INTEGER,
+  weight FLOAT
+);
+
 DROP TABLE IF EXISTS public.class_comp_matrix;
 CREATE TABLE public.class_comp_matrix (
   code_from INTEGER,
@@ -6,11 +12,22 @@ CREATE TABLE public.class_comp_matrix (
   comp_value FLOAT
 );
 
-DROP TABLE IF EXISTS public.class_weights;
-CREATE TABLE public.class_weights (
-  code INTEGER,
-  weight FLOAT
-);
+
+CREATE OR REPLACE FUNCTION 
+  populate_class_weights(class_codes INTEGER[]) RETURNS void AS
+  $$
+  DECLARE  
+    code INTEGER;   
+  BEGIN
+    FOREACH code IN ARRAY class_codes    
+    LOOP
+      EXECUTE format(
+        'INSERT INTO %s (code, weight) 
+         VALUES ($1, $2);', 'class_weights')
+      USING code, 1; 
+    END LOOP;
+  END;
+  $$ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION 
@@ -56,23 +73,6 @@ CREATE OR REPLACE FUNCTION
 
 
 CREATE OR REPLACE FUNCTION 
-  populate_class_weights(class_codes INTEGER[]) RETURNS void AS
-  $$
-  DECLARE  
-    code INTEGER;   
-  BEGIN
-    FOREACH code IN ARRAY class_codes    
-    LOOP
-      EXECUTE format(
-        'INSERT INTO %s (code, weight) 
-         VALUES ($1, $2);', 'class_weights')
-      USING code, 1; 
-    END LOOP;
-  END;
-  $$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE FUNCTION 
   populate_tables() RETURNS void AS 
   $$
   DECLARE
@@ -82,8 +82,8 @@ CREATE OR REPLACE FUNCTION
   			12400, 12500, 13000, 14010, 14030, 14040, 14050, 14060, 14080, 
   			14090, 14100, 14120, 14130, 14140, 14160, 14162, 14170, 14180];
   BEGIN
-    EXECUTE populate_class_comp_matrix(class_codes);
     EXECUTE populate_class_weights(class_codes);
+    EXECUTE populate_class_comp_matrix(class_codes);    
   END;
   $$ LANGUAGE plpgsql;
 
